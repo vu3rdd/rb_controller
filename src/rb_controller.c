@@ -124,6 +124,7 @@ unsigned char ENC1state, ENC2state, ENC3state, ENC4state, ENC5state;
 volatile int ENC1NewState, ENC2NewState, ENC3NewState, ENC4NewState,
     ENC5NewState;
 volatile int KeyPressed = false, Keyval = 0;
+volatile int KeyPressedLong = false;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
 // unsigned int Keyval = 0;
@@ -174,6 +175,7 @@ int tx_gain = 50;
 int audio_gain = 25;
 int zzac_index = 1;
 int nb_val = 0;
+int snb_val = 0;
 int nr_val = 0;
 int vox_val = 0;
 int split_val = 0;
@@ -485,6 +487,14 @@ void keypad_Handler() {
       if (gpio_get(kp_gpio)) {
         Keyval = keypad_4X3[row][col];
         KeyPressed = true;
+
+        // wait for another 350ms and check the column again
+        // to see if it is a long press
+        sleep_ms(350);
+        if (gpio_get(kp_gpio)) {
+            Keyval = keypad_4X3[row][col];
+            KeyPressedLong = true;
+        }
       }
     }
     gpio_put(keypad_Row[row], 0);
@@ -570,9 +580,22 @@ void keypad_Handler() {
       break;
     }
     case NB: {
-        nb_val++;
-        if (nb_val == 3)
-            nb_val = 0;
+        // first read the current state
+        /* printf("ZZNA;"); */
+        /* char cur_nb[16]; */
+        /* for (size_t i = 0; i < 16; i++) { */
+        /*     cur_nb[i] = getchar(); */
+        /*     if (cur_nb[i] == ';') { */
+        /*         cur_nb[i] = '\0'; */
+        /*         break; */
+        /*     } */
+        /* } */
+
+        // response would be ZZNAx; where x is a number.
+        /* nb_val = atoi(cur_nb[4]); */
+
+        // cycle nb value between 0, 1 and 2.
+        nb_val = (nb_val + 1) % 3;
         switch (nb_val) {
         case 0:
             printf("ZZNA0;ZZNB0;");
@@ -584,11 +607,14 @@ void keypad_Handler() {
             printf("ZZNA0;ZZNB1;");
             break;
         }
+        /* // toggle snb */
+        /*     snb_val = (snb_val + 1) % 2; */
+        /*     printf("ZZNN%d;", snb_val); */
+        /* } */
         break;
     }
     case NR: {
-      nr_val++;
-      nr_val = nr_val % 4
+      nr_val = (nr_val + 1) % 3;
       switch (nr_val) {
       case 0:
         printf("ZZNR0;ZZNS0;");
