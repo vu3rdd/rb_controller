@@ -570,17 +570,25 @@ void keypad_Handler() {
       break;
     }
     case NB: {
-      if (nb_val == 0)
-        nb_val = 1;
-      else
-        nb_val = 0;
-      printf("ZZNA%d;", nb_val);
-      break;
+        nb_val++;
+        if (nb_val == 3)
+            nb_val = 0;
+        switch (nb_val) {
+        case 0:
+            printf("ZZNA0;ZZNB0;");
+            break;
+        case 1:
+            printf("ZZNA1;ZZNB0;");
+            break;
+        case 2:
+            printf("ZZNA0;ZZNB1;");
+            break;
+        }
+        break;
     }
     case NR: {
       nr_val++;
-      if (nr_val == 3)
-        nr_val = 0;
+      nr_val = nr_val % 4
       switch (nr_val) {
       case 0:
         printf("ZZNR0;ZZNS0;");
