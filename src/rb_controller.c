@@ -128,21 +128,8 @@ unsigned int col;
 volatile uint kp_gpio = KPCX;
 // unsigned int Keyval = 0;
 unsigned int keypad_Row[4] = {KPR0, KPR1, KPR2, KPR3};
-unsigned int keypad_4X3[4][4] = {
+unsigned int keypad_4X4[4][4] = {
     {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}};
-// char keypad_msg[16][5] = {
-//   "KM01", "KM02", "KM03", "KM04",  // { 1,  2,  3,  4 }
-//   "KM05", "KM06", "KM07", "KM08",  // { 5,  6,  7,  8 }
-//   "KM09", "KM10", "KM11", "KM12",  // { 9, 10, 11, 12 }
-//   "KM13", "KM14", "KM15", "KM16"   // {13, 14, 15, 16 }
-// };
-
-char keypad_msg[16][6] = {
-    "ZZBU;\0", "ZZMD0;", "ZZCN0;", "KM16", // { 1,  2,  3,  4 }
-    "ZZBD;\0", "KM07",   "KM11",   "KM15", // { 5,  6,  7,  8 }
-    "KM02",    "KM06",   "KM10",   "KM14", // { 9, 10, 11, 12 }
-    "KM01",    "KM05",   "KM09",   "KM13"  // {13, 14, 15, 16 }
-};
 
 #define ON_OFF 13
 #define ANT_SEL 9
@@ -484,7 +471,7 @@ void keypad_Handler() {
     if (gpio_get(kp_gpio)) {
       sleep_ms(10);
       if (gpio_get(kp_gpio)) {
-        Keyval = keypad_4X3[row][col];
+        Keyval = keypad_4X4[row][col];
         KeyPressed = true;
       }
     }
@@ -526,21 +513,26 @@ void keypad_Handler() {
       break;
     }
     case FSTEP: {
-      switch (zzac_index) {
-      case 0:
-        zzac_index = 4;
+        // cycle through 1, 10, 100, 1000 hz
+        switch (zzac_index) {
+        case 0: // 1 hz -> 10 hz
+            zzac_index = 1;
+            break;
+        case 1: // 10 hz -> 100 hz
+            zzac_index = 4;
+            break;
+        case 4: // 100 hz -> 1khz
+            zzac_index = 7;
+            break;
+        case 7: // 1khz -> 1 hz
+            zzac_index = 0;
+            break;
+        default:
+            zzac_index = 0;
+            break;
+        }
+        printf("ZZAC%02d;", zzac_index);
         break;
-      case 4:
-        zzac_index = 7;
-        break;
-      case 7:
-        zzac_index = 0;
-        break;
-      default:
-        zzac_index = 0;
-      }
-      printf("ZZAC%02d;", zzac_index);
-      break;
     }
 
     case BAND_UP: {
@@ -751,8 +743,8 @@ void ENC5_callback_Handler(void) {
   }
 }
 
-void Keypad4X3_callback_Handler(uint gpio) {
-  // printf("Keypad4X3_callback_Handler\n");
+void Keypad4X4_callback_Handler(uint gpio) {
+  // printf("Keypad4X4_callback_Handler\n");
   kp_gpio = gpio;
 }
 
@@ -771,7 +763,7 @@ void gpio_callback(uint gpio, uint32_t events) {
     ENC5_callback_Handler();
   } else if ((gpio == KPC0) || (gpio == KPC1) || (gpio == KPC2) ||
              (gpio == KPC3)) {
-    Keypad4X3_callback_Handler(gpio);
+    Keypad4X4_callback_Handler(gpio);
   }
   restore_interrupts(int_status);
 }
