@@ -124,7 +124,6 @@ unsigned char ENC1state, ENC2state, ENC3state, ENC4state, ENC5state;
 volatile int ENC1NewState, ENC2NewState, ENC3NewState, ENC4NewState,
     ENC5NewState;
 volatile int KeyPressed = false, Keyval = 0;
-volatile int KeyPressedLong = false;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
 // unsigned int Keyval = 0;
@@ -173,9 +172,9 @@ int zzmd_index = 0;
 int rx_gain = 0;
 int tx_gain = 50;
 int audio_gain = 25;
-int zzac_index = 1;
+int zzac_index = 0;
 int nb_val = 0;
-int snb_val = 0;
+// int snb_val = 0;
 int nr_val = 0;
 int vox_val = 0;
 int split_val = 0;
@@ -483,18 +482,10 @@ void keypad_Handler() {
   for (unsigned int row = 0; ((row < 4) && (!Keyval)); row++) {
     gpio_put(keypad_Row[row], 1);
     if (gpio_get(kp_gpio)) {
-      sleep_ms(150);
+      sleep_ms(10);
       if (gpio_get(kp_gpio)) {
         Keyval = keypad_4X3[row][col];
         KeyPressed = true;
-
-        // wait for another 350ms and check the column again
-        // to see if it is a long press
-        sleep_ms(350);
-        if (gpio_get(kp_gpio)) {
-            Keyval = keypad_4X3[row][col];
-            KeyPressedLong = true;
-        }
       }
     }
     gpio_put(keypad_Row[row], 0);
@@ -539,6 +530,9 @@ void keypad_Handler() {
       case 0:
         zzac_index = 4;
         break;
+      case 4:
+        zzac_index = 7;
+        break;
       case 7:
         zzac_index = 0;
         break;
@@ -580,20 +574,6 @@ void keypad_Handler() {
       break;
     }
     case NB: {
-        // first read the current state
-        /* printf("ZZNA;"); */
-        /* char cur_nb[16]; */
-        /* for (size_t i = 0; i < 16; i++) { */
-        /*     cur_nb[i] = getchar(); */
-        /*     if (cur_nb[i] == ';') { */
-        /*         cur_nb[i] = '\0'; */
-        /*         break; */
-        /*     } */
-        /* } */
-
-        // response would be ZZNAx; where x is a number.
-        /* nb_val = atoi(cur_nb[4]); */
-
         // cycle nb value between 0, 1 and 2.
         nb_val = (nb_val + 1) % 3;
         switch (nb_val) {
@@ -607,10 +587,6 @@ void keypad_Handler() {
             printf("ZZNA0;ZZNB1;");
             break;
         }
-        /* // toggle snb */
-        /*     snb_val = (snb_val + 1) % 2; */
-        /*     printf("ZZNN%d;", snb_val); */
-        /* } */
         break;
     }
     case NR: {
