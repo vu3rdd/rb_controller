@@ -48,6 +48,9 @@ const uint LED_PIN = PICO_DEFAULT_LED_PIN;
 #define PTT_IN 20
 #define PWM 22
 
+unsigned long time = 0;
+const int delayTime = 50; // Delay for every push button may vary
+
 // MCP23017 INPUT
 #define ENC_RIT_SW 254
 #define ENC_ZOOM_SW 127
@@ -454,225 +457,215 @@ void ENC5_Handler() { // Zoom - Filter
 }
 
 void keypad_Handler() {
-  gpio_put(KPR0, 0);
-  gpio_put(KPR1, 0);
-  gpio_put(KPR2, 0);
-  gpio_put(KPR3, 0);
-  if (kp_gpio == KPC0)
-    col = 0;
-  else if (kp_gpio == KPC1)
-    col = 1;
-  else if (kp_gpio == KPC2)
-    col = 2;
-  else if (kp_gpio == KPC3)
-    col = 3;
-  for (unsigned int row = 0; ((row < 4) && (!Keyval)); row++) {
-    gpio_put(keypad_Row[row], 1);
-    if (gpio_get(kp_gpio)) {
-      sleep_ms(10);
-      if (gpio_get(kp_gpio)) {
-        Keyval = keypad_4X4[row][col];
-        KeyPressed = true;
-      }
+    gpio_put(KPR0, 0);
+    gpio_put(KPR1, 0);
+    gpio_put(KPR2, 0);
+    gpio_put(KPR3, 0);
+    if (kp_gpio == KPC0)
+        col = 0;
+    else if (kp_gpio == KPC1)
+        col = 1;
+    else if (kp_gpio == KPC2)
+        col = 2;
+    else if (kp_gpio == KPC3)
+        col = 3;
+    // printf("Keypad_handler: KeyVal = %d\n", Keyval);
+    for (unsigned int row = 0; (row < 4); row++) {
+        gpio_put(keypad_Row[row], 1);
+        sleep_ms(10);
+        if (gpio_get(kp_gpio)) {
+            // sleep_ms(10);
+            //if (gpio_get(kp_gpio)) {
+            // printf("r=%d, c=%d\n", row, col);
+            Keyval = keypad_4X4[row][col];
+            KeyPressed = true;
+            // printf("keyval=%d\n", Keyval);
+            //}
+        }
+        gpio_put(keypad_Row[row], 0);
     }
-    gpio_put(keypad_Row[row], 0);
-  }
-  gpio_put(KPR0, 1);
-  gpio_put(KPR1, 1);
-  gpio_put(KPR2, 1);
-  gpio_put(KPR3, 1);
 
-  if (KeyPressed) {
-    // printf("%d\n",Keyval);
-    // Keyval = 0; KeyPressed = false;
-    // kp_gpio = KPCX;
+    gpio_put(KPR0, 1);
+    gpio_put(KPR1, 1);
+    gpio_put(KPR2, 1);
+    gpio_put(KPR3, 1);
 
-    // return;
-    // keypad_msg[Keyval - 1][4] = '\0';
-    switch (Keyval) {
-    case CTUNE: {
-      printf("ZZCN%d;", ctune);
-      if (ctune == 0)
-        ctune = 1;
-      else
-        ctune = 0;
-      break;
-    }
-    case LSB_USB_AM: {
-      printf("ZZMD%s;", zzmd_val[zzmd_index]);
-      zzmd_index++;
-      if (zzmd_index == 3)
-        zzmd_index = 0;
-      break;
-    }
-    case LCW_UCW_DIG: {
-      printf("ZZMD%s;", zzmd1_val[zzmd1_index]);
-      zzmd1_index++;
-      if (zzmd1_index == 3)
-        zzmd1_index = 0;
-      break;
-    }
-    case FSTEP: {
-        // cycle through 1, 10, 100, 1000 hz
-        switch (zzac_index) {
-        case 0: // 1 hz -> 10 hz
-            zzac_index = 1;
+    if (KeyPressed) {
+        /* printf("kv = %d\n",Keyval); */
+        /* Keyval = 0; KeyPressed = false; */
+        /* kp_gpio = KPCX; */
+
+        /* return; */
+        // keypad_msg[Keyval - 1][4] = '\0';
+        switch (Keyval) {
+        case CTUNE:
+            printf("ZZCN%d;", ctune);
+            if (ctune == 0)
+                ctune = 1;
+            else
+                ctune = 0;
             break;
-        case 1: // 10 hz -> 100 hz
-            zzac_index = 4;
+        case LSB_USB_AM:
+            printf("ZZMD%s;", zzmd_val[zzmd_index]);
+            zzmd_index++;
+            if (zzmd_index == 3)
+                zzmd_index = 0;
             break;
-        case 4: // 100 hz -> 1khz
-            zzac_index = 7;
+        case LCW_UCW_DIG:
+            printf("ZZMD%s;", zzmd1_val[zzmd1_index]);
+            zzmd1_index++;
+            if (zzmd1_index == 3)
+                zzmd1_index = 0;
             break;
-        case 7: // 1khz -> 1 hz
-            zzac_index = 0;
+        case FSTEP:
+            // cycle through 1, 10, 100, 1000 hz
+            switch (zzac_index) {
+            case 0: // 1 hz -> 10 hz
+                zzac_index = 1;
+                break;
+            case 1: // 10 hz -> 100 hz
+                zzac_index = 4;
+                break;
+            case 4: // 100 hz -> 1khz
+                zzac_index = 7;
+                break;
+            case 7: // 1khz -> 1 hz
+                zzac_index = 0;
+                break;
+            default:
+                zzac_index = 0;
+                break;
+            }
+            printf("ZZAC%02d;", zzac_index);
+            break;
+        case BAND_UP:
+            if (!MHZ_enable) {
+                printf("ZZBU;");
+                sleep_ms(15);
+                readFrequency();
+            } else {
+                f += 1e6;
+                if (f > 30e6)
+                    f = 30e6;
+                printf("ZZFA%011lld;", f);
+                // sleep_ms(15);
+                readFrequency();
+            }
+            break;
+        case BAND_DWN:
+            if (!MHZ_enable) {
+                printf("ZZBD;");
+                // sleep_ms(15);
+                readFrequency();
+            } else {
+                if (f > 1e6)
+                    f -= 1e6;
+                printf("ZZFA%011lld;", f);
+                sleep_ms(15);
+                readFrequency();
+            }
+            break;
+        case NB:
+            // cycle nb value between 0, 1 and 2.
+            nb_val = (nb_val + 1) % 3;
+            switch (nb_val) {
+            case 0:
+                printf("ZZNA0;ZZNB0;");
+                break;
+            case 1:
+                printf("ZZNA1;ZZNB0;");
+                break;
+            case 2:
+                printf("ZZNA0;ZZNB1;");
+                break;
+            }
+            break;
+        case NR:
+            nr_val = (nr_val + 1) % 3;
+            switch (nr_val) {
+            case 0:
+                printf("ZZNR0;ZZNS0;");
+                break;
+            case 1:
+                printf("ZZNR1;ZZNS0;");
+                break;
+            case 2:
+                printf("ZZNR0;ZZNS1;");
+                break;
+            }
+            break;
+        case VFO_A_B:
+            printf("ZZVS0;");
+            break;
+        case MHZ_STEP:
+            if (MHZ_enable) {
+                MHZ_enable = false;
+                // printf("ZZTI0;");
+            } else {
+                MHZ_enable = true;
+                // printf("ZZTI1;");
+            }
+            // printf("ZZVS1;");
+            break;
+        case VFO_SWAP:
+            printf("ZZVS2;");
+            readFrequency();
+            break;
+        case VOX:
+            if (vox_val == 0)
+                vox_val = 1;
+            else
+                vox_val = 0;
+            printf("VX%d;", vox_val);
+            break;
+        case SPLIT:
+            if (split_val == 0)
+                split_val = 1;
+            else
+                split_val = 0;
+            printf("ZZSP%d;", split_val);
+            break;
+        case FLOCK:
+            if (lock_val == 0)
+                lock_val = 1;
+            else
+                lock_val = 0;
+            printf("ZZVL%d;", lock_val);
+            break;
+        case ANT_SEL:
+            if (antsel == 0)
+                antsel = 64;
+            else
+                antsel = 0;
+            write_register(MCP23017_GPIOA, ((antsel == 1) ? 4 : 8));
+            writetomcp23008();
+            break;
+        case ON_OFF:
+            if (power) {
+                printf("#S;");
+                sleep_ms(10000);
+                MCP23017_GPIOA_val |= POWER_ON_RELAY;
+                writemcp23017();
+                sleep_ms(20);
+                power = false;
+            } else {
+                MCP23017_GPIOA_val &= ~POWER_ON_RELAY;
+                writemcp23017();
+                sleep_ms(20);
+                waitforradio();
+                power = true;
+            }
             break;
         default:
-            zzac_index = 0;
             break;
         }
-        printf("ZZAC%02d;", zzac_index);
-        break;
-    }
 
-    case BAND_UP: {
-      if (!MHZ_enable) {
-        printf("ZZBU;");
-        sleep_ms(15);
-        readFrequency();
-      } else {
-
-        f += 1e6;
-        if (f > 30e6)
-          f = 30e6;
-        printf("ZZFA%011lld;", f);
-        // sleep_ms(15);
-        readFrequency();
-      }
-      break;
+        Keyval = 0;
+        KeyPressed = false;
+        kp_gpio = KPCX;
     }
-    case BAND_DWN: {
-      if (!MHZ_enable) {
-        printf("ZZBD;");
-        // sleep_ms(15);
-        readFrequency();
-      } else {
-        if (f > 1e6)
-          f -= 1e6;
-        printf("ZZFA%011lld;", f);
-        sleep_ms(15);
-        readFrequency();
-      }
-      break;
-    }
-    case NB: {
-        // cycle nb value between 0, 1 and 2.
-        nb_val = (nb_val + 1) % 3;
-        switch (nb_val) {
-        case 0:
-            printf("ZZNA0;ZZNB0;");
-            break;
-        case 1:
-            printf("ZZNA1;ZZNB0;");
-            break;
-        case 2:
-            printf("ZZNA0;ZZNB1;");
-            break;
-        }
-        break;
-    }
-    case NR: {
-      nr_val = (nr_val + 1) % 3;
-      switch (nr_val) {
-      case 0:
-        printf("ZZNR0;ZZNS0;");
-        break;
-      case 1:
-        printf("ZZNR1;ZZNS0;");
-        break;
-      case 2:
-        printf("ZZNR0;ZZNS1;");
-        break;
-      }
-      break;
-    }
-    case VFO_A_B:
-      printf("ZZVS0;");
-      break;
-    case MHZ_STEP:
-      if (MHZ_enable) {
-        MHZ_enable = false;
-        // printf("ZZTI0;");
-      } else {
-        MHZ_enable = true;
-        // printf("ZZTI1;");
-      }
-      // printf("ZZVS1;");
-      break;
-    case VFO_SWAP:
-      printf("ZZVS2;");
-      readFrequency();
-      break;
-    case VOX:
-      if (vox_val == 0)
-        vox_val = 1;
-      else
-        vox_val = 0;
-      printf("VX%d;", vox_val);
-      break;
-    case SPLIT:
-      if (split_val == 0)
-        split_val = 1;
-      else
-        split_val = 0;
-      printf("ZZSP%d;", split_val);
-      break;
-    case FLOCK:
-      if (lock_val == 0)
-        lock_val = 1;
-      else
-        lock_val = 0;
-      printf("ZZVL%d;", lock_val);
-      break;
-    case ANT_SEL: {
-      if (antsel == 0)
-        antsel = 64;
-      else
-        antsel = 0;
-      write_register(MCP23017_GPIOA, ((antsel == 1) ? 4 : 8));
-      writetomcp23008();
-      break;
-    }
-    case ON_OFF: {
-
-      if (power) {
-        printf("#S;");
-        sleep_ms(10000);
-        MCP23017_GPIOA_val |= POWER_ON_RELAY;
-        writemcp23017();
-        sleep_ms(20);
-        power = false;
-
-      } else {
-        MCP23017_GPIOA_val &= ~POWER_ON_RELAY;
-        writemcp23017();
-        sleep_ms(20);
-        waitforradio();
-
-        power = true;
-      }
-
-      break;
-    }
-    default:
-      break;
-    }
-
-    Keyval = 0;
-    KeyPressed = false;
-    kp_gpio = KPCX;
-  }
 }
+
 void waitforradio() {
   // return;
   if (1 == 1) {
@@ -744,28 +737,36 @@ void ENC5_callback_Handler(void) {
 }
 
 void Keypad4X4_callback_Handler(uint gpio) {
-  // printf("Keypad4X4_callback_Handler\n");
-  kp_gpio = gpio;
+    // printf("Keypad4X4_callback_Handler: %d\n", gpio);
+    kp_gpio = gpio;
 }
 
 void gpio_callback(uint gpio, uint32_t events) {
-  // printf("gpio_callback gpio = %d\n",gpio);
-  int_status = save_and_disable_interrupts();
-  if ((gpio == ENC1A) || (gpio == ENC1B)) {
-    ENC1_callback_Handler();
-  } else if ((gpio == ENC2A) || (gpio == ENC2B)) {
-    ENC2_callback_Handler();
-  } else if ((gpio == ENC3A) || (gpio == ENC3B)) {
-    ENC3_callback_Handler();
-  } else if ((gpio == ENC4A) || (gpio == ENC4B)) {
-    ENC4_callback_Handler();
-  } else if ((gpio == ENC5A) || (gpio == ENC5B)) {
-    ENC5_callback_Handler();
-  } else if ((gpio == KPC0) || (gpio == KPC1) || (gpio == KPC2) ||
-             (gpio == KPC3)) {
-    Keypad4X4_callback_Handler(gpio);
-  }
-  restore_interrupts(int_status);
+
+    int_status = save_and_disable_interrupts();
+    if ((to_ms_since_boot(get_absolute_time())-time)>delayTime) {
+        time = to_ms_since_boot(get_absolute_time());
+        if ((gpio == KPC0) ||
+            (gpio == KPC1) ||
+            (gpio == KPC2) ||
+            (gpio == KPC3)) {
+            Keypad4X4_callback_Handler(gpio);
+        }
+        // printf("gpio_callback gpio = %d\n",gpio);
+    }
+
+    if ((gpio == ENC1A) || (gpio == ENC1B)) {
+        ENC1_callback_Handler();
+    } else if ((gpio == ENC2A) || (gpio == ENC2B)) {
+        ENC2_callback_Handler();
+    } else if ((gpio == ENC3A) || (gpio == ENC3B)) {
+        ENC3_callback_Handler();
+    } else if ((gpio == ENC4A) || (gpio == ENC4B)) {
+        ENC4_callback_Handler();
+    } else if ((gpio == ENC5A) || (gpio == ENC5B)) {
+        ENC5_callback_Handler();
+    }
+    restore_interrupts(int_status);
 }
 void I2C_Expander1_Handler() {
   // if (interrupt_on_mcp0) {
@@ -878,6 +879,7 @@ int main() {
 
   sleep_ms(2000);
   // printf("Initislizing Controller...");
+  time = to_ms_since_boot(get_absolute_time());
   sleep_ms(1000);
   // configuring Encoder1 A
 #if !defined(i2c_default) || !defined(PICO_DEFAULT_I2C_SDA_PIN) ||             \
@@ -1048,15 +1050,16 @@ int main() {
   // printf("Stating Controller...");
 
   while (1) {
-    ENC1_Handler();
-    ENC2_Handler();
-    ENC3_Handler();
-    ENC4_Handler();
-    ENC5_Handler();
-    I2C_Expander1_Handler();
-    if (kp_gpio != KPCX)
-      keypad_Handler();
-    PTT_Handler();
+      ENC1_Handler();
+      ENC2_Handler();
+      ENC3_Handler();
+      ENC4_Handler();
+      ENC5_Handler();
+      I2C_Expander1_Handler();
+      // printf("kp_gpio = %d\n", kp_gpio);
+      if (kp_gpio != KPCX)
+          keypad_Handler();
+      PTT_Handler();
   }
   return 0;
 }
