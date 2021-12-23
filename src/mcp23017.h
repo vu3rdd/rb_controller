@@ -158,7 +158,4 @@ int read_dual_registers(uint8_t reg);
 
 int write_dual_registers(uint8_t reg, int value);
 
-int output;
-int last_input;
-
 #endif // PICO_MCP23017_H

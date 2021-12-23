@@ -6,9 +6,11 @@
 
 #include "mcp23017.h"
 #include "mcp23017_private.h"
-
 #define I2C_ADDR 0x21
 #define I2C_ADDR_MCP23008 0x26
+
+int output;
+int last_input;
 
 int write_register_mcp23008(uint8_t reg, uint8_t value) {
   uint8_t command[] = {reg, value};
