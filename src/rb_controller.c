@@ -127,7 +127,7 @@ const unsigned char ttable[7][4] = {
 unsigned char ENC1state, ENC2state, ENC3state, ENC4state, ENC5state;
 volatile int ENC1NewState, ENC2NewState, ENC3NewState, ENC4NewState,
     ENC5NewState;
-volatile int KeyPressed = false, Keyval = 0;
+volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
 // unsigned int Keyval = 0;
@@ -496,6 +496,7 @@ void keypad_Handler() {
     gpio_put(KPR1, 0);
     gpio_put(KPR2, 0);
     gpio_put(KPR3, 0);
+
     if (kp_gpio == KPC0)
         col = 0;
     else if (kp_gpio == KPC1)
@@ -509,13 +510,12 @@ void keypad_Handler() {
         gpio_put(keypad_Row[row], 1);
         sleep_ms(10);
         if (gpio_get(kp_gpio)) {
-            // sleep_ms(10);
-            //if (gpio_get(kp_gpio)) {
-            // printf("r=%d, c=%d\n", row, col);
             Keyval = keypad_4X4[row][col];
             KeyPressed = true;
-            // printf("keyval=%d\n", Keyval);
-            //}
+            sleep_ms(250);
+            if (gpio_get(kp_gpio)) {
+                LongKeyPressed = true;
+            }
         }
         gpio_put(keypad_Row[row], 0);
     }
@@ -741,6 +741,7 @@ void keypad_Handler() {
     }
     Keyval = 0;
     KeyPressed = false;
+    LongKeyPressed = false;
     kp_gpio = KPCX;
 }
 
@@ -972,6 +973,7 @@ void PTT_Handler() {
     }
   }
 }
+
 int main() {
 
   stdio_init_all();
