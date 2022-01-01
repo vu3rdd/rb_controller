@@ -57,6 +57,9 @@ const int delayTime = 50; // Delay for every push button may vary
 #define ENC_MUTE_DRIVE_SW 254
 #define ENC_RX_RFGAIN_SW 253
 
+#define FSTEP 191
+#define RXANT 223
+
 bool keyer_control = false;
 bool mute = false;
 
@@ -135,17 +138,19 @@ unsigned int keypad_4X4[4][4] = {
 #define ON_OFF 13
 #define ANT_SEL 9
 #define VOX 5         //
+
 #define BAND_DWN 1    //
 #define BAND_UP 2     //
 #define LSB_USB_AM 3  //
 #define LCW_UCW_DIG 4 //
+
 #define VFO_A_B 7     //
 #define MHZ_STEP 10   //
 #define VFO_SWAP 6    //
 #define SPLIT 8       //
 #define NB 11         //
 #define NR 12         //
-#define FSTEP 14      //
+#define AGC 14      //
 #define CTUNE 15      //
 #define FLOCK 16      //
 
@@ -517,27 +522,26 @@ void keypad_Handler() {
             if (zzmd1_index == 3)
                 zzmd1_index = 0;
             break;
-        case FSTEP:
-            // cycle through 1, 10, 100, 1000 hz
-            switch (zzac_index) {
-            case 0: // 1 hz -> 10 hz
-                zzac_index = 1;
+        case AGC: {
+            switch (agc_mode) {
+            case 0:
+                agc_mode = 2;
                 break;
-            case 1: // 10 hz -> 100 hz
-                zzac_index = 4;
+            case 2:
+                agc_mode = 3;
                 break;
-            case 4: // 100 hz -> 1khz
-                zzac_index = 7;
+            case 3:
+                agc_mode = 4;
                 break;
-            case 7: // 1khz -> 1 hz
-                zzac_index = 0;
+            case 4:
+                agc_mode = 2;
                 break;
             default:
-                zzac_index = 0;
-                break;
+                agc_mode = 2;
             }
-            printf("ZZAC%02d;", zzac_index);
+            printf("ZZGT%d;", agc_mode);
             break;
+        }
         case BAND_UP:
             if (!MHZ_enable) {
                 printf("ZZBU;");
@@ -809,34 +813,55 @@ void I2C_Expander1_Handler() {
       drive_enable = true;
       break;
     }
-    case ENC_BL_SW: {
-      if (rxant == 0)
-        rxant = 128;
-      else
-        rxant = 0;
-      writetomcp23008();
-      break;
+
+    case FSTEP: {
+        // cycle through 1, 10, 100, 1000 hz
+        switch (zzac_index) {
+        case 0: // 1 hz -> 10 hz
+            zzac_index = 1;
+            break;
+        case 1: // 10 hz -> 100 hz
+            zzac_index = 4;
+            break;
+        case 4: // 100 hz -> 1khz
+            zzac_index = 7;
+            break;
+        case 7: // 1khz -> 1 hz
+            zzac_index = 0;
+            break;
+        default:
+            zzac_index = 0;
+            break;
+        }
+        printf("ZZAC%02d;", zzac_index);
+        break;
     }
-    case ENC_BR_SW: {
-      switch (agc_mode) {
-      case 0:
-        agc_mode = 2;
+    case RXANT: {
+        if (rxant == 0)
+            rxant = 128;
+        else
+            rxant = 0;
+        writetomcp23008();
         break;
-      case 2:
-        agc_mode = 3;
-        break;
-      case 3:
-        agc_mode = 4;
-        break;
-      case 4:
-        agc_mode = 2;
-        break;
-      default:
-        agc_mode = 2;
-      }
-      printf("ZZGT%d;", agc_mode);
-      break;
     }
+     /*  switch (agc_mode) { */
+    /*   case 0: */
+    /*     agc_mode = 2; */
+    /*     break; */
+    /*   case 2: */
+    /*     agc_mode = 3; */
+    /*     break; */
+    /*   case 3: */
+    /*     agc_mode = 4; */
+    /*     break; */
+    /*   case 4: */
+    /*     agc_mode = 2; */
+    /*     break; */
+    /*   default: */
+    /*     agc_mode = 2; */
+    /*   } */
+    /*   printf("ZZGT%d;", agc_mode); */
+    /*   break; */
 
     default:
       zoom_enable = false;
