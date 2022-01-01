@@ -738,11 +738,10 @@ void keypad_Handler() {
         default:
             break;
         }
-
-        Keyval = 0;
-        KeyPressed = false;
-        kp_gpio = KPCX;
     }
+    Keyval = 0;
+    KeyPressed = false;
+    kp_gpio = KPCX;
 }
 
 void waitforradio() {
