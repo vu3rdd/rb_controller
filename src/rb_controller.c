@@ -461,6 +461,34 @@ void ENC5_Handler() { // Zoom - Filter
   }
 }
 
+// get current vfo frequency (A or B)
+int getVFO(char AorB) {
+    if (AorB == 'A') {
+        printf("ZZFA;");
+    } else if (AorB == 'B') {
+        printf("ZZFB;");
+    }
+
+    char resp[16]; // eg: ZZFA00007137000;
+    for (int i = 0; i < 16; i++) {
+        resp[i] = getchar();
+    }
+
+    char freq[12];
+    int j = 4;
+    for (int i = 0; i < 12; i++) {
+        freq[i] = resp[j];
+        if (resp[j] == ';') {
+            freq[i] = '\0';
+            break;
+        }
+        j++;
+    }
+
+    // at this point, the buffer freq contains current frequency as a string.
+    return atoi(freq);
+}
+
 void keypad_Handler() {
     gpio_put(KPR0, 0);
     gpio_put(KPR1, 0);
@@ -623,6 +651,36 @@ void keypad_Handler() {
             printf("VX%d;", vox_val);
             break;
         case SPLIT:
+            // first read the current mode. If the mode is CW, then VFOB=VFOA+1kc and SPLIT ON
+            // if mode is SSB (LSB/USB), then VFOB = vfoA + 5kc and SPLIT ON
+            /* printf("ZZMD;"); // try to read the current mode */
+            /* char current_mode[16]; */
+            /* for (int cnt = 0; cnt < 16; cnt++) { */
+            /*     current_mode[cnt] = getchar(); */
+            /*     if (current_mode[cnt] == ';') */
+            /*         current_mode[cnt+1] = '\0'; */
+            /*         break; */
+            /* } */
+
+            /* // for debug */
+            /* printf("response: %s\n", current_mode); */
+
+            /* // check if mode is CW */
+            /* if (strncmp(current_mode, "ZZMD03;", 7) == 0 || */
+            /*     strncmp(current_mode, "ZZMD04;", 7) == 0) { */
+            /*     // vfoB = vfoA + 1khz */
+            /*     // first read vfo A */
+            /*     int vfoA = getVFO('A'); */
+
+            /*     // calculate the new vfo B value */
+            /*     int vfoB_int = vfoA + 1000; */
+
+            /*     // set vfo B value */
+            /*     char vfoB[16]; */
+            /*     sprintf(vfoB, "ZZFB%011d;", vfoB_int); */
+            /*     printf("%s", vfoB); */
+            /* } */
+
             if (split_val == 0)
                 split_val = 1;
             else
