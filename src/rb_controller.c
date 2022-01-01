@@ -52,12 +52,10 @@ unsigned long time = 0;
 const int delayTime = 50; // Delay for every push button may vary
 
 // MCP23017 INPUT
-#define ENC_RIT_SW 254
+#define ENC_RIT_SW 251
 #define ENC_ZOOM_SW 127
-#define ENC_MUTE_DRIVE_SW 251
+#define ENC_MUTE_DRIVE_SW 254
 #define ENC_RX_RFGAIN_SW 253
-#define ENC_BL_SW 191
-#define ENC_BR_SW 223
 
 bool keyer_control = false;
 bool mute = false;
