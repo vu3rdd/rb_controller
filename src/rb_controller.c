@@ -167,7 +167,7 @@ int tx_gain = 50;
 int audio_gain = 25;
 int zzac_index = 0;
 int nb_val = 0;
-// int snb_val = 0;
+int snb_val = 0;
 int nr_val = 0;
 int vox_val = 0;
 int split_val = 0;
@@ -600,6 +600,15 @@ void keypad_Handler() {
             }
             break;
         case NB:
+            if (LongKeyPressed) {
+                snb_val = (snb_val + 1) % 2;
+                if (snb_val == 1) {
+                    printf("ZZNN1;");
+                } else {
+                    printf("ZZNN0;");
+                }
+                break;
+            }
             // cycle nb value between 0, 1 and 2.
             nb_val = (nb_val + 1) % 3;
             switch (nb_val) {
