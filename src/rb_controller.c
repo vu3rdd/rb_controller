@@ -5,7 +5,7 @@
  **************************************/
 #include "hardware/i2c.h"
 
-//#include "mcp23017.h"
+#include "mcp23017.h"
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
 #include "pico/sync.h"
@@ -64,6 +64,8 @@ bool keyer_control = false;
 bool mute = false;
 
 uint32_t int_status;
+
+void waitforradio();
 
 //--------------------------------------------------------------------------
 #define DIR_NONE 0x0
@@ -328,8 +330,13 @@ void ENC2_Handler() { // RX Gain
     }
   }
 }
-void writemcp23017() { write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val); }
-void writetomcp23008() { write_register_mcp23008(9, lpf | antsel | rxant); }
+void writemcp23017() {
+    write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
+}
+
+void writetomcp23008() {
+    write_register_mcp23008(9, lpf | antsel | rxant);
+}
 
 bool readFrequency() {
   // return;
