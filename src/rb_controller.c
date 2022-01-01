@@ -681,6 +681,21 @@ void keypad_Handler() {
                 char vfoB[16];
                 sprintf(vfoB, "ZZFB%011d;", vfoB_int);
                 printf("%s", vfoB);
+            } else if (strncmp(current_mode, "ZZMD0;", 6) == 0 ||
+                       strncmp(current_mode, "ZZMD00;", 7) == 0 ||
+                       strncmp(current_mode, "ZZMD01;", 7) == 0) {
+                // we are in LSB or USB
+                // vfoB = vfoA + 5khz
+                // first read vfo A
+                int vfoA = getVFO('A');
+
+                // calculate the new vfo B value
+                int vfoB_int = vfoA + 5000;
+
+                // set vfo B value
+                char vfoB[16];
+                sprintf(vfoB, "ZZFB%011d;", vfoB_int);
+                printf("%s", vfoB);
             }
 
             if (split_val == 0)
