@@ -19,8 +19,8 @@
 const uint LED_PIN = PICO_DEFAULT_LED_PIN;
 #endif
 
-#define ENC4A 19
-#define ENC4B 18
+#define ENC1A 19
+#define ENC1B 18
 
 #define ENC2A 16
 #define ENC2B 17
@@ -28,8 +28,8 @@ const uint LED_PIN = PICO_DEFAULT_LED_PIN;
 #define ENC3A 11
 #define ENC3B 10
 
-#define ENC1A 12
-#define ENC1B 13
+#define ENC4A 12
+#define ENC4B 13
 
 #define ENC5A 14
 #define ENC5B 15
@@ -249,30 +249,42 @@ void setup_input(uint gpio_irq) {
   // int int_values = get_interrupt_values();
 }
 
-void ENC1_Handler() { // Audio
+void RIT_ENC_Handler() { // RIT
   int s = 0;
   int_status = save_and_disable_interrupts();
-  if (ENC1NewState == 32) {
+  if (ENC4NewState == 32) {
     s = 1;
   }
-  if (ENC1NewState == 16) {
+  if (ENC4NewState == 16) {
     s = -1;
   }
-  ENC1NewState = 0;
+  ENC4NewState = 0;
   restore_interrupts(int_status);
 
   if (s != 0) {
     // Take action here
-    if (s == 1) {
-      audio_gain++;
-      if (audio_gain == 101)
-        audio_gain = 100;
-    } else if (s == -1) {
-      if (audio_gain > 0)
-        audio_gain--;
+    if (s == -1) {
+
+      if (rit_val <= -1000)
+        rit_val = -1000;
+      else {
+        // printf("ZZRD;");
+        rit_val -= 100;
+      }
+
+    } else if (s == 1) {
+
+      if (rit_val < 1000) {
+        // printf("ZZRU;");
+        rit_val += 100;
+      } else
+        rit_val = 1000;
     }
-    printf("ZZAG%03d;", audio_gain);
+
+    printf("ZZRF%+5d;", rit_val);
+    sleep_ms(10);
   }
+
 }
 void ENC2_Handler() { // RX Gain
   int s = 0;
@@ -378,42 +390,32 @@ void ENC3_Handler() { // VFO Up-Down
     readFrequency();
   }
 }
-void ENC4_Handler() { // RIT Frequency
+void Audio_ENC_Handler() { // Audio
   int s = 0;
   int_status = save_and_disable_interrupts();
-  if (ENC4NewState == 32) {
+  if (ENC1NewState == 32) {
     s = 1;
   }
-  if (ENC4NewState == 16) {
+  if (ENC1NewState == 16) {
     s = -1;
   }
-  ENC4NewState = 0;
+  ENC1NewState = 0;
   restore_interrupts(int_status);
 
   if (s != 0) {
     // Take action here
-    if (s == -1) {
-
-      if (rit_val <= -1000)
-        rit_val = -1000;
-      else {
-        // printf("ZZRD;");
-        rit_val -= 100;
-      }
-
-    } else if (s == 1) {
-
-      if (rit_val < 1000) {
-        // printf("ZZRU;");
-        rit_val += 100;
-      } else
-        rit_val = 1000;
+    if (s == 1) {
+      audio_gain++;
+      if (audio_gain == 101)
+        audio_gain = 100;
+    } else if (s == -1) {
+      if (audio_gain > 0)
+        audio_gain--;
     }
-
-    printf("ZZRF%+5d;", rit_val);
-    sleep_ms(10);
+    printf("ZZAG%03d;", audio_gain);
   }
 }
+
 void ENC5_Handler() { // Zoom - Filter
   int s = 0;
   int_status = save_and_disable_interrupts();
@@ -1050,10 +1052,10 @@ int main() {
   // printf("Stating Controller...");
 
   while (1) {
-      ENC1_Handler();
+      RIT_ENC_Handler();
       ENC2_Handler();
       ENC3_Handler();
-      ENC4_Handler();
+      Audio_ENC_Handler();
       ENC5_Handler();
       I2C_Expander1_Handler();
       // printf("kp_gpio = %d\n", kp_gpio);
