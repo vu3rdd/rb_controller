@@ -917,7 +917,16 @@ void I2C_Expander1_Handler() {
         case 4: // 100 hz -> 1khz
             zzac_index = 7;
             break;
-        case 7: // 1khz -> 1 hz
+        case 7: // 1khz -> 10k hz
+            zzac_index = 13;
+            break;
+        case 13: // 10khz -> 100k hz
+            zzac_index = 20;
+            break;
+        case 20: // 100khz -> 1Mhz
+            zzac_index = 23;
+            break;
+        case 23: // 1Mhz -> 1hz
             zzac_index = 0;
             break;
         default:
