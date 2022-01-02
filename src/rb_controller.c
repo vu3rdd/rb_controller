@@ -906,33 +906,34 @@ void I2C_Expander1_Handler() {
     }
 
     case FSTEP: {
-        // cycle through 1, 10, 100, 1000 hz
-        switch (zzac_index) {
-        case 0: // 1 hz -> 10 hz
-            zzac_index = 1;
-            break;
-        case 1: // 10 hz -> 100 hz
-            zzac_index = 4;
-            break;
-        case 4: // 100 hz -> 1khz
-            zzac_index = 7;
-            break;
-        case 7: // 1khz -> 10k hz
-            zzac_index = 13;
-            break;
-        case 13: // 10khz -> 100k hz
-            zzac_index = 20;
-            break;
-        case 20: // 100khz -> 1Mhz
-            zzac_index = 23;
-            break;
-        case 23: // 1Mhz -> 1hz
-            zzac_index = 0;
-            break;
-        default:
-            zzac_index = 0;
-            break;
-        }
+        // cycle through 1, 10, 100, 1k, 10k, 100k, 1M hz
+        zzac_index = (zzac_index + 1) % 7;
+        /* switch (zzac_index) { */
+        /* case 0: // 1 hz -> 10 hz */
+        /*     zzac_index = 1; */
+        /*     break; */
+        /* case 1: // 10 hz -> 100 hz */
+        /*     zzac_index = 4; */
+        /*     break; */
+        /* case 4: // 100 hz -> 1khz */
+        /*     zzac_index = 7; */
+        /*     break; */
+        /* case 7: // 1khz -> 10k hz */
+        /*     zzac_index = 13; */
+        /*     break; */
+        /* case 13: // 10khz -> 100k hz */
+        /*     zzac_index = 20; */
+        /*     break; */
+        /* case 20: // 100khz -> 1Mhz */
+        /*     zzac_index = 23; */
+        /*     break; */
+        /* case 23: // 1Mhz -> 1hz */
+        /*     zzac_index = 0; */
+        /*     break; */
+        /* default: */
+        /*     zzac_index = 0; */
+        /*     break; */
+        /* } */
         printf("ZZAC%02d;", zzac_index);
         break;
     }
