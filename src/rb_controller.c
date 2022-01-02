@@ -170,6 +170,7 @@ int audio_gain = 25;
 int zzac_index = 0;
 int nb_val = 0;
 int snb_val = 0;
+int anf_val = 0;
 int nr_val = 0;
 int vox_val = 0;
 int split_val = 0;
@@ -631,6 +632,15 @@ void keypad_Handler() {
             }
             break;
         case NR:
+            if (LongKeyPressed) {
+                anf_val = (anf_val + 1) % 2;
+                if (anf_val == 1) {
+                    printf("ZZNT1;");
+                } else {
+                    printf("ZZNT0;");
+                }
+                break;
+            }
             nr_val = (nr_val + 1) % 3;
             switch (nr_val) {
             case 0:
