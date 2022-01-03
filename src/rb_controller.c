@@ -1178,12 +1178,12 @@ int main() {
     // printf("Stating Controller...");
 
     while (1) {
-        RIT_ENC_Handler();
-        ENC2_Handler();
-        ENC3_Handler();
-        Audio_ENC_Handler();
-        ENC5_Handler();
-        I2C_Expander1_Handler();
+        RIT_ENC_Handler(s);
+        ENC2_Handler(s);
+        ENC3_Handler(s);
+        Audio_ENC_Handler(s);
+        ENC5_Handler(s);
+        I2C_Expander1_Handler(s);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)
             keypad_Handler();
