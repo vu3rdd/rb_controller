@@ -190,7 +190,7 @@ uint8_t MCP23017_GPIOA_val = 0;
 char zzmd_val[3][3] = {"00\0", "01\0", "06\0"};
 int zzmd1_index = 0;
 char zzmd1_val[3][3] = {"03\0", "04\0", "07\0"};
-bool power = false;
+bool power = true;
 bool MHZ_enable = false;
 
 // I2C reserves some addresses for special purposes. We exclude these from the
