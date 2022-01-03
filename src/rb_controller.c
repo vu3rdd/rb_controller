@@ -340,19 +340,19 @@ void writetomcp23008() {
 }
 
 bool readFrequency() {
-  // return;
   char freqbuff[20];
-  memset(freqbuff, '0', 16);
   int cnt = 0;
   static uint8_t oldlpf = 0;
+
+  memset(freqbuff, '0', 16);
   printf("ZZFA;");
-  // sleep_ms(15);
+
   for (cnt = 0; cnt < 16; cnt++) {
-    // sleep_ms(1);
     freqbuff[cnt] = getchar();
     if (freqbuff[cnt] == ';')
       break;
   }
+
   if (freqbuff[15] == ';') {
     f = atoll(&freqbuff[4]);
     if (f < 2e6) {
