@@ -313,44 +313,6 @@ void writetomcp23008(radio_state *rs) {
     write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
 }
 
-bool readFrequency(radio_state *rs) {
-  char freqbuff[20];
-  int cnt = 0;
-  static uint8_t oldlpf = 0;
-
-  memset(freqbuff, '0', 16);
-  printf("ZZFA;");
-
-  for (cnt = 0; cnt < 16; cnt++) {
-    freqbuff[cnt] = getchar();
-    if (freqbuff[cnt] == ';')
-      break;
-  }
-
-  if (freqbuff[15] == ';') {
-      rs->f = strtol(&freqbuff[4], NULL, 10);
-      if (rs->f < 2e6) {
-          rs->lpf = 1;
-      } else if (rs->f < 3e6) {
-          rs->lpf = 2;
-      } else if (rs->f < 5e6) {
-          rs->lpf = 4;
-      } else if (rs->f < 9e6) {
-          rs->lpf = 8;
-      } else if (rs->f < 16e6) {
-          rs->lpf = 16;
-      } else if (rs->f <= 30e6) {
-          rs->lpf = 32;
-      }
-      if (rs->lpf != oldlpf) {
-          writetomcp23008(rs);
-          oldlpf = rs->lpf;
-      }
-      return true;
-  } else
-      return false;
-}
-
 void ENC3_Handler(radio_state *rs) { // VFO Up-Down
   int s = 0;
   int_status = save_and_disable_interrupts();
@@ -372,7 +334,7 @@ void ENC3_Handler(radio_state *rs) { // VFO Up-Down
       printf("ZZAE01;");
     }
     // sleep_ms(10);
-    readFrequency(rs);
+    switchLPF(rs, 'A');
   }
 }
 void Audio_ENC_Handler(radio_state *rs) { // Audio
@@ -519,31 +481,31 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
         case BAND_UP:
+            int f = getVFO('A');
             if (!MHZ_enable) {
                 printf("ZZBU;");
                 sleep_ms(15);
-                readFrequency(rs);
             } else {
-                rs->f += 1e6;
-                if (rs->f > 30e6)
-                    rs->f = 30e6;
-                printf("ZZFA%011lld;", rs->f);
+                f += 1e6;
+                if (f > 30e6)
+                    f = 30e6;
+                printf("ZZFA%011lld;", f);
                 // sleep_ms(15);
-                readFrequency(rs);
             }
+            switchLPF(rs, f);
             break;
         case BAND_DWN:
+            int f = getVFO('A');
             if (!MHZ_enable) {
                 printf("ZZBD;");
                 // sleep_ms(15);
-                readFrequency(rs);
             } else {
-                if (rs->f > 1e6)
-                    rs->f -= 1e6;
-                printf("ZZFA%011lld;", rs->f);
+                if (f > 1e6)
+                    f -= 1e6;
+                printf("ZZFA%011lld;", f);
                 sleep_ms(15);
-                readFrequency(rs);
             }
+            switchLPF(rs, f);
             break;
         case NB:
             if (LongKeyPressed) {
@@ -607,7 +569,8 @@ void keypad_Handler(radio_state *rs) {
             break;
         case VFO_SWAP:
             printf("ZZVS2;");
-            readFrequency(rs);
+            int f = getVFO('A');
+            switchLPF(rs, f);
             break;
         case VOX:
             if (rs->vox_val == 0)
@@ -718,7 +681,9 @@ void waitforradio(radio_state *rs) {
       gpio_put(LED_PIN, 0);
       sleep_ms(500);
     }
-    readFrequency(rs);
+    // do we really need to switch LPF at the beginning?
+    int f = getVFO('A');
+    switchLPF(rs, f);
   }
 }
 

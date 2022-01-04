@@ -28,7 +28,6 @@ radio_state *radio_init(void){
     s->drive_enable = false;
     s->agc_mode = 0;
     s->zoom_val = 0;
-    s->f = 0;
     s->antsel = 0;
     s->rxant = 0;
     s->lpf = 0;
@@ -89,4 +88,34 @@ mode getMode(void) {
     }
 
     return m;
+}
+
+// switch LPF based on frequency
+void switchLPF(radio_state *rs, int f) {
+  static uint8_t oldlpf = 0;
+
+  if (f < 2000000) {
+      // < 2MHz
+      rs->lpf = 1 << 0;
+  } else if (f < 3000000) {
+      // < 3 MHz
+      rs->lpf = 1 << 1;
+  } else if (f < 5000000) {
+      // < 5 MHz
+      rs->lpf = 1 << 2;
+  } else if (f < 9000000) {
+      // < 9 MHz
+      rs->lpf = 1 << 3;
+  } else if (f < 16000000) {
+      // < 16 MHz
+      rs->lpf = 1 << 4;
+  } else if (f <= 30000000) {
+      // < 30 MHz
+      rs->lpf = 1 << 5;
+  }
+
+  if (rs->lpf != oldlpf) {
+      writetomcp23008(rs);
+      oldlpf = rs->lpf;
+  }
 }

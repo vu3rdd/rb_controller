@@ -26,7 +26,6 @@ typedef struct radio_state {
     bool drive_enable;
     int agc_mode;
     int zoom_val;
-    long long f;
     uint8_t antsel;
     uint8_t rxant;
     uint8_t lpf;
@@ -58,5 +57,6 @@ radio_state *radio_init(void);
 // cached state type
 int getVFO(char AorB);
 mode getMode(void);
+void switchLPF(radio_state *rs, int f);
 
 #endif
