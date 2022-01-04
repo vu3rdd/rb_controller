@@ -459,6 +459,7 @@ void keypad_Handler(radio_state *rs) {
                 rs->zzmd1_index = 0;
             break;
         case AGC: {
+            rs->agc_mode = getAGCMode();
             switch (rs->agc_mode) {
             case 0:
                 rs->agc_mode = 2;
@@ -620,6 +621,7 @@ void keypad_Handler(radio_state *rs) {
                 rs->split_val = 0;
             printf("ZZSP%d;", rs->split_val);
             break;
+        }
         case FLOCK:
             if (rs->lock_val == 0)
                 rs->lock_val = 1;
