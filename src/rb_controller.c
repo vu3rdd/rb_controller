@@ -345,20 +345,19 @@ void Audio_ENC_Handler(radio_state *rs) { // Audio
   ENC1NewState = 0;
   restore_interrupts(int_status);
 
-  // get audio gain
-  rs->audio_gain = getAudioGain();
-
   if (s != 0) {
-    // Take action here
-    if (s == 1) {
-        rs->audio_gain++;
-        if (rs->audio_gain == 101)
-            rs->audio_gain = 100;
-    } else if (s == -1) {
-        if (rs->audio_gain > 0)
-            rs->audio_gain--;
-    }
-    printf("ZZAG%03d;", rs->audio_gain);
+      // Take action here
+      // get audio gain
+      rs->audio_gain = getAudioGain();
+      if (s == 1) {
+          rs->audio_gain++;
+          if (rs->audio_gain == 101)
+              rs->audio_gain = 100;
+      } else if (s == -1) {
+          if (rs->audio_gain > 0)
+              rs->audio_gain--;
+      }
+      printf("ZZAG%03d;", rs->audio_gain);
   }
 }
 
