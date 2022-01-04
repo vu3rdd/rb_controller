@@ -371,7 +371,7 @@ bool readFrequency(radio_state *rs) {
           rs->lpf = 32;
       }
       if (rs->lpf != oldlpf) {
-          writetomcp23008();
+          writetomcp23008(rs);
           oldlpf = rs->lpf;
       }
       return true;
@@ -538,7 +538,7 @@ void keypad_Handler(radio_state *rs) {
     if (KeyPressed) {
         switch (Keyval) {
         case CTUNE:
-            printf("ZZCN%d;", ctune);
+            printf("ZZCN%d;", rs->ctune);
             if (rs->ctune == 0)
                 rs->ctune = 1;
             else
@@ -571,7 +571,7 @@ void keypad_Handler(radio_state *rs) {
                 rs->agc_mode = 2;
                 break;
             default:
-                s->agc_mode = 2;
+                rs->agc_mode = 2;
             }
             printf("ZZGT%d;", rs->agc_mode);
             break;
@@ -739,7 +739,7 @@ void keypad_Handler(radio_state *rs) {
             else
                 rs->antsel = 0;
             write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
-            writetomcp23008();
+            writetomcp23008(rs);
             break;
         case ON_OFF:
             if (rs->power) {
@@ -923,7 +923,7 @@ void I2C_Expander1_Handler(radio_state *rs) {
             rs->rxant = 128;
         else
             rs->rxant = 0;
-        writetomcp23008();
+        writetomcp23008(rs);
         break;
     }
     default:
@@ -1185,7 +1185,7 @@ int main() {
         I2C_Expander1_Handler(s);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)
-            keypad_Handler();
+            keypad_Handler(s);
         PTT_Handler();
     }
 
