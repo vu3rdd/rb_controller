@@ -581,24 +581,13 @@ void keypad_Handler(radio_state *rs) {
                 rs->vox_val = 0;
             printf("VX%d;", rs->vox_val);
             break;
-        case SPLIT:
+        case SPLIT: {
             // first read the current mode. If the mode is CW, then VFOB=VFOA+1kc and SPLIT ON
             // if mode is SSB (LSB/USB), then VFOB = vfoA + 5kc and SPLIT ON
-            printf("ZZMD;"); // try to read the current mode
-            char current_mode[20];
-            memset(current_mode, '\0', 20);
-            for (int cnt = 0; cnt < 20; cnt++) {
-                current_mode[cnt] = getchar();
-                if (current_mode[cnt] == ';')
-                    break;
-            }
+            int mode = getMode();
 
-            // for debug
-            // printf("response: %s", current_mode);
-
-            // check if mode is CW
-            if (strncmp(current_mode, "ZZMD03;", 7) == 0 ||
-                strncmp(current_mode, "ZZMD04;", 7) == 0) {
+            if (mode == CWL || mode == CWU) {
+                // check if mode is CW
                 // vfoB = vfoA + 1khz
                 // first read vfo A
                 int vfoA = getVFO('A');
@@ -610,9 +599,7 @@ void keypad_Handler(radio_state *rs) {
                 char vfoB[16];
                 sprintf(vfoB, "ZZFB%011d;", vfoB_int);
                 printf("%s", vfoB);
-            } else if (strncmp(current_mode, "ZZMD0;", 6) == 0 ||
-                       strncmp(current_mode, "ZZMD00;", 7) == 0 ||
-                       strncmp(current_mode, "ZZMD01;", 7) == 0) {
+            } else if (mode == LSB || mode == USB) {
                 // we are in LSB or USB
                 // vfoB = vfoA + 5khz
                 // first read vfo A
