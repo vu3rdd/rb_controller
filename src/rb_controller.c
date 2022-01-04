@@ -886,6 +886,14 @@ void PTT_Handler() {
   }
 }
 
+// timer tick
+/* int globalF = 10000000; //10MHz */
+/* bool repeating_timer_callback(struct repeating_timer *t) { */
+/*     globalF = getVFO('A'); */
+
+/*     return true; */
+/* } */
+
 
 int main() {
     stdio_init_all();
@@ -1085,6 +1093,9 @@ int main() {
     }
     gpio_put(LED_PIN, 0);
     radio_state *rs = radio_init();
+
+    /* struct repeating_timer timer; */
+    /* add_repeating_timer_ms(-(1000), repeating_timer_callback, NULL, &timer); */
 
     int f = getVFO('A');
     switchLPF(rs, f);
