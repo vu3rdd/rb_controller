@@ -511,9 +511,20 @@ void keypad_Handler(radio_state *rs) {
         case NB: {
             int nb_val = getNB();
             int nb2_val = getNB2();
-            if (nb2_val == 1) {
+
+            if (nb_val == 0 && nb2_val == 0) {
+                // nb and nb2 is off, so turn on nb
+                nb_val = 1;
+            } else if (nb_val == 1 && nb2_val == 0) {
+                // nb is on, nb2 is off, so turn off nb and turn on nb2
                 nb_val = 0;
+                nb2_val = 1;
+            } else if (nb_val == 0 && nb2_val == 1) {
+                // nb is off, nb2 is on -> turn off nb and nb2
+                nb_val = 0;
+                nb2_val = 0;
             }
+
             if (LongKeyPressed) {
                 rs->snb_val = getSNB();
                 rs->snb_val = (rs->snb_val + 1) % 2;
@@ -526,9 +537,20 @@ void keypad_Handler(radio_state *rs) {
         case NR: {
             int nr_val = getNR();
             int nr2_val = getNR2();
-            if (nr2_val == 1) {
+
+            if (nr_val == 0 && nr2_val == 0) {
+                // nr and nr2 is off, so turn on nb
+                nr_val = 1;
+            } else if (nr_val == 1 && nr2_val == 0) {
+                // nr is on, nr2 is off, so turn off nr and turn on nr2
                 nr_val = 0;
+                nr2_val = 1;
+            } else if (nr_val == 0 && nr2_val == 1) {
+                // nr is off, nr2 is on -> turn off nr and nr2
+                nr_val = 0;
+                nr2_val = 0;
             }
+
             if (LongKeyPressed) {
                 rs->anf_val = getANF();
                 // toggle ANF state
@@ -536,6 +558,7 @@ void keypad_Handler(radio_state *rs) {
                 printf("ZZNT%d;", rs->anf_val);
                 break;
             }
+
             printf("ZZNR%d;ZZNS%d;", nr_val, nr2_val);
             break;
         }

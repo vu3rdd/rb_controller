@@ -172,7 +172,7 @@ int getNR2(void) {
 }
 
 int getSNB(void) {
-    printf("ZZNO;"); // try to read the current mode
+    printf("ZZNN;"); // try to read the current mode
     char snb[7];
 
     memset(snb, '\0', 7);
