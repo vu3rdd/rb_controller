@@ -672,6 +672,23 @@ void keypad_Handler(radio_state *rs) {
     kp_gpio = KPCX;
 }
 
+void wait_for_ping(void) {
+    char msg[5];
+    memset(msg, '\0', 5);
+
+    gpio_put(LED_PIN, 1);
+    while (true) {
+        for (int i = 0; i < 4; i++) {
+            msg[i] = getchar();
+        }
+        if (strncmp(msg, "PING", 4) == 0) {
+            // got the ping message
+            break;
+        }
+    }
+    gpio_put(LED_PIN, 0);
+}
+
 void waitforradio(radio_state *rs) {
   // return;
   if (1 == 1) {
@@ -819,6 +836,7 @@ void I2C_Expander1_Handler(radio_state *rs) {
     }
 
     case FSTEP: {
+        rs->zzac_index = getStepIndex();
         // cycle through 1, 10, 100, 1k, 10k, 100k, 1M hz
         rs->zzac_index = (rs->zzac_index + 1) % 7;
 
@@ -876,9 +894,6 @@ int main() {
 
     time = to_ms_since_boot(get_absolute_time());
     sleep_ms(1000);
-
-    // initialize radio state
-    radio_state *s = radio_init();
 
     // configuring Encoder1 A
 #if !defined(i2c_default) || !defined(PICO_DEFAULT_I2C_SDA_PIN) ||             \
@@ -1051,16 +1066,27 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
     // printf("Stating Controller...");
 
+    // before we send any command to the radio, wait for a "custom"
+    // handshake between the controller and the radio (in this case
+    // the pihpsdr). Once the radio is able to open the serial port,
+    // it would send a "PING" message (4 character). Controller would
+    // wait for the "PING" string from the serial port before sending
+    // any command to the radio.
+    // wait_for_ping();
+
+    // initialize radio state
+    radio_state *rs = radio_init();
+
     while (1) {
-        RIT_ENC_Handler(s);
-        ENC2_Handler(s);
-        ENC3_Handler(s);
-        Audio_ENC_Handler(s);
-        ENC5_Handler(s);
-        I2C_Expander1_Handler(s);
+        RIT_ENC_Handler(rs);
+        ENC2_Handler(rs);
+        ENC3_Handler(rs);
+        Audio_ENC_Handler(rs);
+        ENC5_Handler(rs);
+        I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)
-            keypad_Handler(s);
+            keypad_Handler(rs);
         PTT_Handler();
     }
 
