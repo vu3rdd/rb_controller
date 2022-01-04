@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "radio.h"
+
 #ifndef PICO_DEFAULT_LED_PIN
 #warning blink example requires a board with a regular LED
 #else
@@ -159,36 +161,6 @@ unsigned int keypad_4X4[4][4] = {
 #define BIAS_OUT 32
 #define TR_RELAY_OUT 64
 #define AM_AMP_MUTE_ON_PTT 128
-
-typedef struct radio_state {
-    int ctune;
-    int zzmd_index;
-    int rx_gain;
-    int tx_gain;
-    int audio_gain;
-    int zzac_index;
-    int nb_val;
-    int snb_val;
-    int anf_val;
-    int nr_val;
-    int vox_val;
-    int split_val;
-    int lock_val;
-    int filter_val;
-    int rit_val;
-    bool rit;
-    bool zoom_enable;
-    bool drive_enable;
-    int agc_mode;
-    int zoom_val;
-    long long f;
-    uint8_t antsel;
-    uint8_t rxant;
-    uint8_t lpf;
-    int zzmd1_index;
-    bool power;
-    bool mute;
-} radio_state;
 
 bool MHZ_enable = false;
 uint8_t MCP23017_GPIOA_val = 0;
@@ -962,38 +934,6 @@ void PTT_Handler() {
   }
 }
 
-radio_state *radio_init(void){
-    radio_state *s = (radio_state *)malloc(sizeof(radio_state));
-
-    s->ctune = 0;
-    s->zzmd_index = 0;
-    s->rx_gain = 0;
-    s->tx_gain = 50;
-    s->audio_gain = 25;
-    s->zzac_index = 0;
-    s->nb_val = 0;
-    s->snb_val = 0;
-    s->anf_val = 0;
-    s->nr_val = 0;
-    s->vox_val = 0;
-    s->split_val = 0;
-    s->lock_val = 0;
-    s->filter_val = 0;
-    s->rit_val = 0;
-    s->rit = false;
-    s->zoom_enable = false;
-    s->drive_enable = false;
-    s->agc_mode = 0;
-    s->zoom_val = 0;
-    s->f = 0;
-    s->antsel = 0;
-    s->rxant = 0;
-    s->lpf = 0;
-    s->zzmd1_index = 0;
-    s->power = true;
-    s->mute = false;
-    return s;
-}
 
 int main() {
     stdio_init_all();
