@@ -60,5 +60,12 @@ mode getMode(void);
 void switchLPF(radio_state *rs, int f);
 int getStepIndex(void);
 int getAudioGain(void);
+int getNB(void);
+int getNB2(void);
+int getNR(void);
+int getNR2(void);
+int getSNB(void);
+int getANF(void);
+int getAGCMode(void);
 
 #endif

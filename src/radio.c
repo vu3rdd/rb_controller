@@ -102,6 +102,126 @@ mode getMode(void) {
     return m;
 }
 
+int getNB(void) {
+    printf("ZZNA;"); // try to read the current mode
+    char nb[7];
+
+    memset(nb, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        nb[i] = getchar();
+        if (nb[i] == ';') {
+            nb[i] = '\0';
+            break;
+        }
+    }
+
+    return (nb[4] == '0' ? 0 : 1);
+}
+
+int getNB2(void) {
+    printf("ZZNB;"); // try to read the current mode
+    char nb[7];
+
+    memset(nb, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        nb[i] = getchar();
+        if (nb[i] == ';') {
+            nb[i] = '\0';
+            break;
+        }
+    }
+
+    return (nb[4] == '0' ? 0 : 1);
+}
+
+
+int getNR(void) {
+    printf("ZZNR;"); // try to read the current mode
+    char nr[7];
+
+    memset(nr, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        nr[i] = getchar();
+        if (nr[i] == ';') {
+            nr[i] = '\0';
+            break;
+        }
+    }
+
+    return (nr[4] == '0' ? 0 : 1);
+}
+
+int getNR2(void) {
+    printf("ZZNS;"); // try to read the current mode
+    char nr[7];
+
+    memset(nr, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        nr[i] = getchar();
+        if (nr[i] == ';') {
+            nr[i] = '\0';
+            break;
+        }
+    }
+
+    return (nr[4] == '0' ? 0 : 1);
+}
+
+int getSNB(void) {
+    printf("ZZNO;"); // try to read the current mode
+    char snb[7];
+
+    memset(snb, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        snb[i] = getchar();
+        if (snb[i] == ';') {
+            snb[i] = '\0';
+            break;
+        }
+    }
+
+    return (snb[4] == '0' ? 0 : 1);
+}
+
+int getANF(void) {
+    printf("ZZNT;"); // try to read the current mode
+    char anf[7];
+
+    memset(anf, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        anf[i] = getchar();
+        if (anf[i] == ';') {
+            anf[i] = '\0';
+            break;
+        }
+    }
+
+    return (anf[4] == '0' ? 0 : 1);
+}
+
+int getAGCMode(void) {
+    printf("ZZGT;"); // try to read the current mode
+    char agc[7];
+
+    memset(agc, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        agc[i] = getchar();
+        if (agc[i] == ';') {
+            agc[i] = '\0';
+            break;
+        }
+    }
+
+    return strtol(&agc[4], NULL, 10);
+}
+
 // switch LPF based on frequency
 void switchLPF(radio_state *rs, int f) {
   static uint8_t oldlpf = 0;
