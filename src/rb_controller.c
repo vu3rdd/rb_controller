@@ -508,53 +508,37 @@ void keypad_Handler(radio_state *rs) {
             switchLPF(rs, f);
             break;
         }
-        case NB:
+        case NB: {
+            int nb_val = getNB();
+            int nb2_val = getNB2();
+            if (nb2_val == 1) {
+                nb_val = 0;
+            }
             if (LongKeyPressed) {
+                rs->snb_val = getSNB();
                 rs->snb_val = (rs->snb_val + 1) % 2;
-                if (rs->snb_val == 1) {
-                    printf("ZZNN1;");
-                } else {
-                    printf("ZZNN0;");
-                }
+                printf("ZZNN%d;", rs->snb_val);
                 break;
             }
-            // cycle nb value between 0, 1 and 2.
-            rs->nb_val = (rs->nb_val + 1) % 3;
-            switch (rs->nb_val) {
-            case 0:
-                printf("ZZNA0;ZZNB0;");
-                break;
-            case 1:
-                printf("ZZNA1;ZZNB0;");
-                break;
-            case 2:
-                printf("ZZNA0;ZZNB1;");
-                break;
-            }
+            printf("ZZNA%d;ZZNB%d;", nb_val, nb2_val);
             break;
-        case NR:
+        }
+        case NR: {
+            int nr_val = getNR();
+            int nr2_val = getNR2();
+            if (nr2_val == 1) {
+                nr_val = 0;
+            }
             if (LongKeyPressed) {
+                rs->anf_val = getANF();
+                // toggle ANF state
                 rs->anf_val = (rs->anf_val + 1) % 2;
-                if (rs->anf_val == 1) {
-                    printf("ZZNT1;");
-                } else {
-                    printf("ZZNT0;");
-                }
+                printf("ZZNT%d;", rs->anf_val);
                 break;
             }
-            rs->nr_val = (rs->nr_val + 1) % 3;
-            switch (rs->nr_val) {
-            case 0:
-                printf("ZZNR0;ZZNS0;");
-                break;
-            case 1:
-                printf("ZZNR1;ZZNS0;");
-                break;
-            case 2:
-                printf("ZZNR0;ZZNS1;");
-                break;
-            }
+            printf("ZZNR%d;ZZNS%d;", nr_val, nr2_val);
             break;
+        }
         case VFO_A_B:
             printf("ZZVS0;");
             break;
