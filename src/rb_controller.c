@@ -485,6 +485,8 @@ void keypad_Handler(radio_state *rs) {
             if (!MHZ_enable) {
                 printf("ZZBU;");
                 sleep_ms(15);
+                // update f
+                f = getVFO('A');
             } else {
                 f += 1e6;
                 if (f > 30e6)
@@ -500,6 +502,7 @@ void keypad_Handler(radio_state *rs) {
             if (!MHZ_enable) {
                 printf("ZZBD;");
                 // sleep_ms(15);
+                f = getVFO('A');
             } else {
                 if (f > 1e6)
                     f -= 1e6;
@@ -697,9 +700,6 @@ void waitforradio(radio_state *rs) {
       gpio_put(LED_PIN, 0);
       sleep_ms(500);
     }
-    // do we really need to switch LPF at the beginning?
-    int f = getVFO('A');
-    switchLPF(rs, f);
   }
 }
 
@@ -943,6 +943,7 @@ int main() {
 #endif
 
     setup_input(MCP_IRQ_GPIO_PIN);
+    // configure mcp23008 GPIO as outputs
     write_register_mcp23008(0, 0x00);
 
     gpio_init(ENC1A);
@@ -1084,6 +1085,9 @@ int main() {
     }
     gpio_put(LED_PIN, 0);
     radio_state *rs = radio_init();
+
+    int f = getVFO('A');
+    switchLPF(rs, f);
 
     while (1) {
         RIT_ENC_Handler(rs);
