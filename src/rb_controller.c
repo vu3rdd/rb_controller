@@ -309,10 +309,6 @@ void writemcp23017() {
     write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
 }
 
-void writetomcp23008(radio_state *rs) {
-    write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
-}
-
 void ENC3_Handler(radio_state *rs) { // VFO Up-Down
   int s = 0;
   int_status = save_and_disable_interrupts();
@@ -648,7 +644,7 @@ void keypad_Handler(radio_state *rs) {
             else
                 rs->antsel = 0;
             write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
-            writetomcp23008(rs);
+            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
             break;
         case ON_OFF:
             if (rs->power) {
@@ -834,7 +830,7 @@ void I2C_Expander1_Handler(radio_state *rs) {
             rs->rxant = 128;
         else
             rs->rxant = 0;
-        writetomcp23008(rs);
+        write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
         break;
     }
     default:

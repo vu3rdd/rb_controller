@@ -115,7 +115,7 @@ void switchLPF(radio_state *rs, int f) {
   }
 
   if (rs->lpf != oldlpf) {
-      writetomcp23008(rs);
+      write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
       oldlpf = rs->lpf;
   }
 }
