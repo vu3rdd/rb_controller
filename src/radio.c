@@ -58,7 +58,7 @@ int getVFO(char AorB) {
         }
     }
 
-    return atoi(&resp[4]);
+    return (int)strtol(&resp[4], NULL, 10);
 }
 
 /* void setVFO(char AorB, int freq) { */
@@ -77,7 +77,11 @@ mode getMode(void) {
             break;
     }
 
-    int m = atoi(&mode[4]);
+    int m = (int) strtol(&mode[4], NULL, 10);
+
+    if (errno != 0) {
+        return INVALIDMODE;
+    }
 
     if (m > DRM) {
         return INVALIDMODE;

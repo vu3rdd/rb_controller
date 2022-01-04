@@ -328,7 +328,7 @@ bool readFrequency(radio_state *rs) {
   }
 
   if (freqbuff[15] == ';') {
-      rs->f = atoll(&freqbuff[4]);
+      rs->f = strtol(&freqbuff[4], NULL, 10);
       if (rs->f < 2e6) {
           rs->lpf = 1;
       } else if (rs->f < 3e6) {
