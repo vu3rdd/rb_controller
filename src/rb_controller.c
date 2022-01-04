@@ -501,7 +501,7 @@ int getVFO(char AorB) {
     return atoi(freq);
 }
 
-void keypad_Handler(radio_state *s) {
+void keypad_Handler(radio_state *rs) {
     gpio_put(KPR0, 0);
     gpio_put(KPR1, 0);
     gpio_put(KPR2, 0);
@@ -539,74 +539,74 @@ void keypad_Handler(radio_state *s) {
         switch (Keyval) {
         case CTUNE:
             printf("ZZCN%d;", ctune);
-            if (s->ctune == 0)
-                s->ctune = 1;
+            if (rs->ctune == 0)
+                rs->ctune = 1;
             else
-                s->ctune = 0;
+                rs->ctune = 0;
             break;
         case LSB_USB_AM:
-            printf("ZZMD%s;", zzmd_val[s->zzmd_index]);
-            s->zzmd_index++;
-            if (s->zzmd_index == 3)
-                s->zzmd_index = 0;
+            printf("ZZMD%s;", zzmd_val[rs->zzmd_index]);
+            rs->zzmd_index++;
+            if (rs->zzmd_index == 3)
+                rs->zzmd_index = 0;
             break;
         case LCW_UCW_DIG:
-            printf("ZZMD%s;", zzmd1_val[s->zzmd1_index]);
-            s->zzmd1_index++;
-            if (s->zzmd1_index == 3)
-                s->zzmd1_index = 0;
+            printf("ZZMD%s;", zzmd1_val[rs->zzmd1_index]);
+            rs->zzmd1_index++;
+            if (rs->zzmd1_index == 3)
+                rs->zzmd1_index = 0;
             break;
         case AGC: {
-            switch (s->agc_mode) {
+            switch (rs->agc_mode) {
             case 0:
-                s->agc_mode = 2;
+                rs->agc_mode = 2;
                 break;
             case 2:
-                s->agc_mode = 3;
+                rs->agc_mode = 3;
                 break;
             case 3:
-                s->agc_mode = 4;
+                rs->agc_mode = 4;
                 break;
             case 4:
-                s->agc_mode = 2;
+                rs->agc_mode = 2;
                 break;
             default:
                 s->agc_mode = 2;
             }
-            printf("ZZGT%d;", s->agc_mode);
+            printf("ZZGT%d;", rs->agc_mode);
             break;
         }
         case BAND_UP:
             if (!MHZ_enable) {
                 printf("ZZBU;");
                 sleep_ms(15);
-                readFrequency(s);
+                readFrequency(rs);
             } else {
                 rs->f += 1e6;
                 if (rs->f > 30e6)
                     rs->f = 30e6;
                 printf("ZZFA%011lld;", rs->f);
                 // sleep_ms(15);
-                readFrequency(s);
+                readFrequency(rs);
             }
             break;
         case BAND_DWN:
             if (!MHZ_enable) {
                 printf("ZZBD;");
                 // sleep_ms(15);
-                readFrequency(s);
+                readFrequency(rs);
             } else {
                 if (rs->f > 1e6)
                     rs->f -= 1e6;
                 printf("ZZFA%011lld;", rs->f);
                 sleep_ms(15);
-                readFrequency(s);
+                readFrequency(rs);
             }
             break;
         case NB:
             if (LongKeyPressed) {
-                s->snb_val = (s->snb_val + 1) % 2;
-                if (s->snb_val == 1) {
+                rs->snb_val = (rs->snb_val + 1) % 2;
+                if (rs->snb_val == 1) {
                     printf("ZZNN1;");
                 } else {
                     printf("ZZNN0;");
@@ -614,8 +614,8 @@ void keypad_Handler(radio_state *s) {
                 break;
             }
             // cycle nb value between 0, 1 and 2.
-            s->nb_val = (s->nb_val + 1) % 3;
-            switch (s->nb_val) {
+            rs->nb_val = (rs->nb_val + 1) % 3;
+            switch (rs->nb_val) {
             case 0:
                 printf("ZZNA0;ZZNB0;");
                 break;
@@ -629,16 +629,16 @@ void keypad_Handler(radio_state *s) {
             break;
         case NR:
             if (LongKeyPressed) {
-                s->anf_val = (s->anf_val + 1) % 2;
-                if (s->anf_val == 1) {
+                rs->anf_val = (rs->anf_val + 1) % 2;
+                if (rs->anf_val == 1) {
                     printf("ZZNT1;");
                 } else {
                     printf("ZZNT0;");
                 }
                 break;
             }
-            s->nr_val = (s->nr_val + 1) % 3;
-            switch (s->nr_val) {
+            rs->nr_val = (rs->nr_val + 1) % 3;
+            switch (rs->nr_val) {
             case 0:
                 printf("ZZNR0;ZZNS0;");
                 break;
@@ -665,14 +665,14 @@ void keypad_Handler(radio_state *s) {
             break;
         case VFO_SWAP:
             printf("ZZVS2;");
-            readFrequency(s);
+            readFrequency(rs);
             break;
         case VOX:
-            if (s->vox_val == 0)
-                s->vox_val = 1;
+            if (rs->vox_val == 0)
+                rs->vox_val = 1;
             else
-                s->vox_val = 0;
-            printf("VX%d;", s->vox_val);
+                rs->vox_val = 0;
+            printf("VX%d;", rs->vox_val);
             break;
         case SPLIT:
             // first read the current mode. If the mode is CW, then VFOB=VFOA+1kc and SPLIT ON
@@ -720,41 +720,41 @@ void keypad_Handler(radio_state *s) {
                 printf("%s", vfoB);
             }
 
-            if (s->split_val == 0)
-                s->split_val = 1;
+            if (rs->split_val == 0)
+                rs->split_val = 1;
             else
-                s->split_val = 0;
-            printf("ZZSP%d;", s->split_val);
+                rs->split_val = 0;
+            printf("ZZSP%d;", rs->split_val);
             break;
         case FLOCK:
-            if (s->lock_val == 0)
-                s->lock_val = 1;
+            if (rs->lock_val == 0)
+                rs->lock_val = 1;
             else
-                s->lock_val = 0;
-            printf("ZZVL%d;", s->lock_val);
+                rs->lock_val = 0;
+            printf("ZZVL%d;", rs->lock_val);
             break;
         case ANT_SEL:
-            if (s->antsel == 0)
-                s->antsel = 64;
+            if (rs->antsel == 0)
+                rs->antsel = 64;
             else
-                s->antsel = 0;
-            write_register(MCP23017_GPIOA, ((s->antsel == 1) ? 4 : 8));
+                rs->antsel = 0;
+            write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
             writetomcp23008();
             break;
         case ON_OFF:
-            if (s->power) {
+            if (rs->power) {
                 printf("#S;");
                 sleep_ms(10000);
                 MCP23017_GPIOA_val |= POWER_ON_RELAY;
                 writemcp23017();
                 sleep_ms(20);
-                s->power = false;
+                rs->power = false;
             } else {
                 MCP23017_GPIOA_val &= ~POWER_ON_RELAY;
                 writemcp23017();
                 sleep_ms(20);
                 waitforradio();
-                s->power = true;
+                rs->power = true;
             }
             break;
         default:
