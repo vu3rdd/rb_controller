@@ -890,6 +890,7 @@ void PTT_Handler() {
 
 int main() {
     stdio_init_all();
+    stdio_usb_init();
     sleep_ms(2000);
 
     time = to_ms_since_boot(get_absolute_time());
@@ -1075,6 +1076,14 @@ int main() {
     // wait_for_ping();
 
     // initialize radio state
+    gpio_put(LED_PIN, 1);
+    while (true) {
+        if (stdio_usb_connected()) {
+            break;
+        }
+        sleep_ms(500);
+    }
+    gpio_put(LED_PIN, 0);
     radio_state *rs = radio_init();
 
     while (1) {
