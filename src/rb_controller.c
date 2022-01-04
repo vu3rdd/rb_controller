@@ -345,6 +345,9 @@ void Audio_ENC_Handler(radio_state *rs) { // Audio
   ENC1NewState = 0;
   restore_interrupts(int_status);
 
+  // get audio gain
+  rs->audio_gain = getAudioGain();
+
   if (s != 0) {
     // Take action here
     if (s == 1) {
