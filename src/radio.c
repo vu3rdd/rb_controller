@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "mcp23017.h"
 #include "radio.h"
 
 radio_state *radio_init(void){
