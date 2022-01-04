@@ -330,7 +330,8 @@ void ENC3_Handler(radio_state *rs) { // VFO Up-Down
       printf("ZZAE01;");
     }
     // sleep_ms(10);
-    switchLPF(rs, 'A');
+    int f = getVFO('A');
+    switchLPF(rs, f);
   }
 }
 void Audio_ENC_Handler(radio_state *rs) { // Audio
