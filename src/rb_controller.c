@@ -61,8 +61,6 @@ const int delayTime = 50; // Delay for every push button may vary
 #define RXANT 223
 
 bool keyer_control = false;
-bool mute = false;
-
 uint32_t int_status;
 
 void waitforradio();
@@ -189,6 +187,7 @@ typedef struct radio_state {
     uint8_t lpf;
     int zzmd1_index;
     bool power;
+    bool mute;
 } radio_state;
 
 bool MHZ_enable = false;
@@ -897,8 +896,8 @@ void I2C_Expander1_Handler(radio_state *rs) {
       break;
     }
     case ENC_MUTE_DRIVE_SW: {
-      mute = !mute;
-      if (mute) {
+      rs->mute = !rs->mute;
+      if (rs->mute) {
 
         printf("ZZMA1;");
       } else {
@@ -992,7 +991,7 @@ radio_state *radio_init(void){
     s->lpf = 0;
     s->zzmd1_index = 0;
     s->power = true;
-
+    s->mute = false;
     return s;
 }
 
