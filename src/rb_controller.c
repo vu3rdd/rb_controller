@@ -480,7 +480,7 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZGT%d;", rs->agc_mode);
             break;
         }
-        case BAND_UP:
+        case BAND_UP: {
             int f = getVFO('A');
             if (!MHZ_enable) {
                 printf("ZZBU;");
@@ -494,7 +494,8 @@ void keypad_Handler(radio_state *rs) {
             }
             switchLPF(rs, f);
             break;
-        case BAND_DWN:
+        }
+        case BAND_DWN: {
             int f = getVFO('A');
             if (!MHZ_enable) {
                 printf("ZZBD;");
@@ -507,6 +508,7 @@ void keypad_Handler(radio_state *rs) {
             }
             switchLPF(rs, f);
             break;
+        }
         case NB:
             if (LongKeyPressed) {
                 rs->snb_val = (rs->snb_val + 1) % 2;
@@ -567,11 +569,13 @@ void keypad_Handler(radio_state *rs) {
             }
             // printf("ZZVS1;");
             break;
-        case VFO_SWAP:
+        case VFO_SWAP: {
             printf("ZZVS2;");
+
             int f = getVFO('A');
             switchLPF(rs, f);
             break;
+        }
         case VOX:
             if (rs->vox_val == 0)
                 rs->vox_val = 1;
