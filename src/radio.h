@@ -35,7 +35,28 @@ typedef struct radio_state {
     bool mute;
 } radio_state;
 
+typedef enum mode {
+    INVALIDMODE = -1,
+    LSB  = 0,
+    USB  = 1,
+    DSB  = 2,
+    CWL  = 3,
+    CWU  = 4,
+    FM   = 5,
+    AM   = 6,
+    DIGU = 7,
+    SPEC = 8,
+    DIGL = 9,
+    SAM  = 10,
+    DRM  = 11,
+} mode;
+
 // exposed functions
 radio_state *radio_init(void);
+
+// these functions directly read from the radio and not from the
+// cached state type
+int getVFO(char AorB);
+mode getMode(void);
 
 #endif

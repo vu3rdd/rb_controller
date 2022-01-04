@@ -443,36 +443,6 @@ void ENC5_Handler(radio_state *rs) { // Zoom - Filter
   }
 }
 
-// get current vfo frequency (A or B)
-int getVFO(char AorB) {
-    if (AorB == 'A') {
-        printf("ZZFA;");
-    } else if (AorB == 'B') {
-        printf("ZZFB;");
-    }
-    char resp[20]; // eg: ZZFA00007137000;
-    for (int i = 0; i < 20; i++) {
-        resp[i] = getchar();
-        if (resp[i] == ';') {
-            break;
-        }
-    }
-
-    char freq[12];
-    int j = 4;
-    for (int i = 0; i < 12; i++) {
-        freq[i] = resp[j];
-        if (resp[j] == ';') {
-            freq[i] = '\0';
-            break;
-        }
-        j++;
-    }
-
-    // at this point, the buffer freq contains current frequency as a string.
-    return atoi(freq);
-}
-
 void keypad_Handler(radio_state *rs) {
     gpio_put(KPR0, 0);
     gpio_put(KPR1, 0);

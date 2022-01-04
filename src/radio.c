@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "radio.h"
 
@@ -35,3 +37,82 @@ radio_state *radio_init(void){
     return s;
 }
 
+/* // get current vfo frequency (A or B) */
+/* int getVFO(char AorB) { */
+/*     if (AorB == 'A') { */
+/*         printf("ZZFA;"); */
+/*     } else if (AorB == 'B') { */
+/*         printf("ZZFB;"); */
+/*     } else { */
+/*         return 1234567; */
+/*     } */
+/*     char resp[20]; // eg: ZZFA00007137000; */
+
+/*     memset(resp, '\0', 20); */
+
+/*     for (int i = 0; i < 20; i++) { */
+/*         resp[i] = getchar(); */
+/*         if (resp[i] == ';') { */
+/*             resp[i] = '\0'; */
+/*             break; */
+/*         } */
+/*     } */
+
+/*     return atoi(&resp[4]); */
+/* } */
+
+// get current vfo frequency (A or B)
+int getVFO(char AorB) {
+    if (AorB == 'A') {
+        printf("ZZFA;");
+    } else if (AorB == 'B') {
+        printf("ZZFB;");
+    }
+    char resp[20]; // eg: ZZFA00007137000;
+    for (int i = 0; i < 20; i++) {
+        resp[i] = getchar();
+        if (resp[i] == ';') {
+            break;
+        }
+    }
+
+    char freq[12];
+    int j = 4;
+    for (int i = 0; i < 12; i++) {
+        freq[i] = resp[j];
+        if (resp[j] == ';') {
+            freq[i] = '\0';
+            break;
+        }
+        j++;
+    }
+
+    // at this point, the buffer freq contains current frequency as a string.
+    return atoi(freq);
+}
+
+
+/* void setVFO(char AorB, int freq) { */
+/* } */
+
+mode getMode(void) {
+    printf("ZZMD;"); // try to read the current mode
+    char mode[20];
+
+    memset(mode, '\0', 20);
+
+    for (int i = 0; i < 20; i++) {
+        mode[i] = getchar();
+        if (mode[i] == ';')
+            mode[i] = '\0';
+            break;
+    }
+
+    int m = atoi(&mode[4]);
+
+    if (m > DRM) {
+        return INVALIDMODE;
+    }
+
+    return m;
+}
