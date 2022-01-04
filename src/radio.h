@@ -59,5 +59,6 @@ int getVFO(char AorB);
 mode getMode(void);
 void switchLPF(radio_state *rs, int f);
 int getStepIndex(void);
+int getAudioGain(void);
 
 #endif

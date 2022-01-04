@@ -54,6 +54,27 @@ int getStepIndex(void) {
     return step_index;
 }
 
+int getAudioGain(void) {
+    printf("ZZAG;");
+    char audiogain_buf[9];
+
+    memset(audiogain_buf, '\0', 9);
+    for (int i = 0; i < 9; i++) {
+        audiogain_buf[i] = getchar();
+        if (audiogain_buf[i] == ';') {
+            audiogain_buf[i] = '\0';
+            break;
+        }
+    }
+
+    int ag = strtol(&audiogain_buf[4], NULL, 10);
+    if (errno != 0) {
+        return -1;
+    }
+
+    return ag;
+}
+
 mode getMode(void) {
     printf("ZZMD;"); // try to read the current mode
     char mode[20];
