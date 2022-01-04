@@ -83,9 +83,10 @@ mode getMode(void) {
 
     for (int i = 0; i < 20; i++) {
         mode[i] = getchar();
-        if (mode[i] == ';')
+        if (mode[i] == ';') {
             mode[i] = '\0';
             break;
+        }
     }
 
     int m = (int) strtol(&mode[4], NULL, 10);
