@@ -47,6 +47,9 @@ const uint LED_PIN = PICO_DEFAULT_LED_PIN;
 #define KPC3 6
 #define KPCX 99 // undefined column number!
 
+int rows[] = { KPR0, KPR1, KPR2, KPR3 };
+int cols[] = { KPC0, KPC1, KPC2, KPC3 };
+
 #define PTT_IN 20
 #define PWM 22
 
@@ -133,7 +136,6 @@ volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
 // unsigned int Keyval = 0;
-unsigned int keypad_Row[4] = {KPR0, KPR1, KPR2, KPR3};
 unsigned int keypad_4X4[4][4] = {
     {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}};
 
@@ -405,10 +407,9 @@ void ENC5_Handler(radio_state *rs) { // Zoom - Filter
 }
 
 void keypad_Handler(radio_state *rs) {
-    gpio_put(KPR0, 0);
-    gpio_put(KPR1, 0);
-    gpio_put(KPR2, 0);
-    gpio_put(KPR3, 0);
+    for (int i = 0; i < 4; i++) {
+        gpio_put(rows[i], 0);
+    }
 
     if (kp_gpio == KPC0)
         col = 0;
@@ -418,9 +419,10 @@ void keypad_Handler(radio_state *rs) {
         col = 2;
     else if (kp_gpio == KPC3)
         col = 3;
+
     // printf("Keypad_handler: KeyVal = %d\n", Keyval);
     for (unsigned int row = 0; (row < 4); row++) {
-        gpio_put(keypad_Row[row], 1);
+        gpio_put(rows[row], 1);
         sleep_ms(10);
         if (gpio_get(kp_gpio)) {
             Keyval = keypad_4X4[row][col];
@@ -430,13 +432,12 @@ void keypad_Handler(radio_state *rs) {
                 LongKeyPressed = true;
             }
         }
-        gpio_put(keypad_Row[row], 0);
+        gpio_put(rows[row], 0);
     }
 
-    gpio_put(KPR0, 1);
-    gpio_put(KPR1, 1);
-    gpio_put(KPR2, 1);
-    gpio_put(KPR3, 1);
+    for (int i = 0; i < 4; i++) {
+        gpio_put(rows[i], 1);
+    }
 
     if (KeyPressed) {
         switch (Keyval) {
@@ -1025,41 +1026,20 @@ int main() {
 
     /* ----------------------- Configure 4X4 Keypad
      * ------------------------------------*/
-    gpio_init(KPC0);
-    gpio_set_dir(KPC0, GPIO_IN);
-    gpio_pull_down(KPC0);
+    for (int i = 0; i < 4; i++) {
+        gpio_init(cols[i]);
+        gpio_set_dir(cols[i], GPIO_IN);
+        gpio_pull_down(cols[i]);
 
-    gpio_init(KPC1);
-    gpio_set_dir(KPC1, GPIO_IN);
-    gpio_pull_down(KPC1);
+        gpio_set_irq_enabled_with_callback(cols[i], GPIO_IRQ_EDGE_RISE, true,
+                                           &gpio_callback);
+    }
 
-    gpio_init(KPC2);
-    gpio_set_dir(KPC2, GPIO_IN);
-    gpio_pull_down(KPC2);
-    gpio_init(KPC3);
-    gpio_set_dir(KPC3, GPIO_IN);
-    gpio_pull_down(KPC3);
-    gpio_set_irq_enabled_with_callback(KPC0, GPIO_IRQ_EDGE_RISE, true,
-                                       &gpio_callback);
-    gpio_set_irq_enabled_with_callback(KPC1, GPIO_IRQ_EDGE_RISE, true,
-                                       &gpio_callback);
-    gpio_set_irq_enabled_with_callback(KPC2, GPIO_IRQ_EDGE_RISE, true,
-                                       &gpio_callback);
-    gpio_set_irq_enabled_with_callback(KPC3, GPIO_IRQ_EDGE_RISE, true,
-                                       &gpio_callback);
-
-    gpio_init(KPR0);
-    gpio_set_dir(KPR0, GPIO_OUT);
-    gpio_put(KPR0, 1);
-    gpio_init(KPR1);
-    gpio_set_dir(KPR1, GPIO_OUT);
-    gpio_put(KPR1, 1);
-    gpio_init(KPR2);
-    gpio_set_dir(KPR2, GPIO_OUT);
-    gpio_put(KPR2, 1);
-    gpio_init(KPR3);
-    gpio_set_dir(KPR3, GPIO_OUT);
-    gpio_put(KPR3, 1);
+    for (int i = 0; i < 4; i++) {
+        gpio_init(rows[i]);
+        gpio_set_dir(rows[i], GPIO_OUT);
+        gpio_put(rows[i], 1);
+    }
 
     gpio_init(PTT_IN);
     gpio_set_dir(PTT_IN, GPIO_IN);
