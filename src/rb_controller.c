@@ -62,9 +62,6 @@ const int delayTime = 50; // Delay for every push button may vary
 #define ENC_MUTE_DRIVE_SW 254
 #define ENC_RX_RFGAIN_SW 253
 
-#define FSTEP 191
-#define RXANT 223
-
 bool keyer_control = false;
 uint32_t int_status;
 
@@ -139,24 +136,35 @@ volatile uint kp_gpio = KPCX;
 unsigned int keypad_4X4[4][4] = {
     {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}};
 
-#define ON_OFF 13
-#define ANT_SEL 9
-#define VOX 5         //
+// buttons mapping
 
-#define BAND_DWN 1    //
-#define BAND_UP 2     //
-#define LSB_USB_AM 3  //
-#define LCW_UCW_DIG 4 //
+// top left
+#define BTN_ON_OFF      13
+#define BTN_ANT_SEL      9
+#define BTN_VOX          5
 
-#define VFO_A_B 7     //
-#define MHZ_STEP 10   //
-#define VFO_SWAP 6    //
-#define SPLIT 8       //
-#define NB 11         //
-#define NR 12         //
-#define AGC 14      //
-#define CTUNE 15      //
-#define FLOCK 16      //
+// bottom left
+#define BTN_BAND_DWN     1
+#define BTN_BAND_UP      2
+
+// bottom middle
+#define BTN_LSB_USB_AM   3
+#define BTN_LCW_UCW_DIG  4
+
+// top right 3x3
+#define BTN_VFO_A_B      7
+#define BTN_MHZ_STEP    10
+#define BTN_VFO_SWAP     6
+#define BTN_SPLIT        8
+#define BTN_NB          11
+#define BTN_NR          12
+#define BTN_AGC         14
+#define BTN_CTUNE       15
+#define BTN_FLOCK       16
+
+// bottom right (fed via MCP23008)
+#define BTN_FSTEP      191
+#define BTN_RXANT      223
 
 #define PTT_OUT_RELAY 1
 #define POWER_ON_RELAY 2
@@ -441,26 +449,26 @@ void keypad_Handler(radio_state *rs) {
 
     if (KeyPressed) {
         switch (Keyval) {
-        case CTUNE:
+        case BTN_CTUNE:
             printf("ZZCN%d;", rs->ctune);
             if (rs->ctune == 0)
                 rs->ctune = 1;
             else
                 rs->ctune = 0;
             break;
-        case LSB_USB_AM:
+        case BTN_LSB_USB_AM:
             printf("ZZMD%s;", zzmd_val[rs->zzmd_index]);
             rs->zzmd_index++;
             if (rs->zzmd_index == 3)
                 rs->zzmd_index = 0;
             break;
-        case LCW_UCW_DIG:
+        case BTN_LCW_UCW_DIG:
             printf("ZZMD%s;", zzmd1_val[rs->zzmd1_index]);
             rs->zzmd1_index++;
             if (rs->zzmd1_index == 3)
                 rs->zzmd1_index = 0;
             break;
-        case AGC: {
+        case BTN_AGC: {
             rs->agc_mode = getAGCMode();
             switch (rs->agc_mode) {
             case 0:
@@ -481,7 +489,7 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZGT%d;", rs->agc_mode);
             break;
         }
-        case BAND_UP: {
+        case BTN_BAND_UP: {
             int f = getVFO('A');
             if (!MHZ_enable) {
                 printf("ZZBU;");
@@ -498,7 +506,7 @@ void keypad_Handler(radio_state *rs) {
             switchLPF(rs, f);
             break;
         }
-        case BAND_DWN: {
+        case BTN_BAND_DWN: {
             int f = getVFO('A');
             if (!MHZ_enable) {
                 printf("ZZBD;");
@@ -513,7 +521,7 @@ void keypad_Handler(radio_state *rs) {
             switchLPF(rs, f);
             break;
         }
-        case NB: {
+        case BTN_NB: {
             int nb_val = getNB();
             int nb2_val = getNB2();
 
@@ -539,7 +547,7 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZNA%d;ZZNB%d;", nb_val, nb2_val);
             break;
         }
-        case NR: {
+        case BTN_NR: {
             int nr_val = getNR();
             int nr2_val = getNR2();
 
@@ -567,10 +575,10 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZNR%d;ZZNS%d;", nr_val, nr2_val);
             break;
         }
-        case VFO_A_B:
+        case BTN_VFO_A_B:
             printf("ZZVS0;");
             break;
-        case MHZ_STEP:
+        case BTN_MHZ_STEP:
             if (MHZ_enable) {
                 MHZ_enable = false;
                 // printf("ZZTI0;");
@@ -580,21 +588,21 @@ void keypad_Handler(radio_state *rs) {
             }
             // printf("ZZVS1;");
             break;
-        case VFO_SWAP: {
+        case BTN_VFO_SWAP: {
             printf("ZZVS2;");
 
             int f = getVFO('A');
             switchLPF(rs, f);
             break;
         }
-        case VOX:
+        case BTN_VOX:
             if (rs->vox_val == 0)
                 rs->vox_val = 1;
             else
                 rs->vox_val = 0;
             printf("VX%d;", rs->vox_val);
             break;
-        case SPLIT: {
+        case BTN_SPLIT: {
             // first read the current mode. If the mode is CW, then VFOB=VFOA+1kc and SPLIT ON
             // if mode is SSB (LSB/USB), then VFOB = vfoA + 5kc and SPLIT ON
             int mode = getMode();
@@ -634,14 +642,14 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZSP%d;", rs->split_val);
             break;
         }
-        case FLOCK:
+        case BTN_FLOCK:
             if (rs->lock_val == 0)
                 rs->lock_val = 1;
             else
                 rs->lock_val = 0;
             printf("ZZVL%d;", rs->lock_val);
             break;
-        case ANT_SEL:
+        case BTN_ANT_SEL:
             if (rs->antsel == 0)
                 rs->antsel = 64;
             else
@@ -649,7 +657,7 @@ void keypad_Handler(radio_state *rs) {
             write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
             write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
             break;
-        case ON_OFF:
+        case BTN_ON_OFF:
             if (rs->power) {
                 printf("#S;");
                 sleep_ms(10000);
@@ -835,7 +843,7 @@ void I2C_Expander1_Handler(radio_state *rs) {
       break;
     }
 
-    case FSTEP: {
+    case BTN_FSTEP: {
         rs->zzac_index = getStepIndex();
         // cycle through 1, 10, 100, 1k, 10k, 100k, 1M hz
         rs->zzac_index = (rs->zzac_index + 1) % 7;
@@ -843,7 +851,7 @@ void I2C_Expander1_Handler(radio_state *rs) {
         printf("ZZAC%02d;", rs->zzac_index);
         break;
     }
-    case RXANT: {
+    case BTN_RXANT: {
         if (rs->rxant == 0)
             rs->rxant = 128;
         else
