@@ -220,7 +220,7 @@ void RIT_ENC_Handler(radio_state *rs) { // RIT
   }
 
 }
-void ENC2_Handler(radio_state *rs) { // RX Gain
+void RXGAIN_ENC_Handler(radio_state *rs) { // RX Gain
   int s = 0;
   int_status = save_and_disable_interrupts();
   if (ENC2NewState == 32) {
@@ -263,7 +263,7 @@ void writemcp23017() {
     write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
 }
 
-void ENC3_Handler(radio_state *rs) { // VFO Up-Down
+void VFO_ENC_Handler(radio_state *rs) { // VFO Up-Down
   int s = 0;
   int_status = save_and_disable_interrupts();
   if (ENC3NewState == 32) {
@@ -316,7 +316,7 @@ void Audio_ENC_Handler(radio_state *rs) { // Audio
   }
 }
 
-void ENC5_Handler(radio_state *rs) { // Zoom - Filter
+void ZOOM_ENC_Handler(radio_state *rs) { // Zoom - Filter
   int s = 0;
   int_status = save_and_disable_interrupts();
   if (ENC5NewState == 32) {
@@ -933,10 +933,10 @@ int main() {
 
     while (1) {
         RIT_ENC_Handler(rs);
-        ENC2_Handler(rs);
-        ENC3_Handler(rs);
+        RXGAIN_ENC_Handler(rs);
+        VFO_ENC_Handler(rs);
         Audio_ENC_Handler(rs);
-        ENC5_Handler(rs);
+        ZOOM_ENC_Handler(rs);
         I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)
