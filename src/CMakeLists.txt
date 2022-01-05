@@ -2,6 +2,7 @@ add_executable(rb_controller
   rb_controller.c
   mcp23017.c
   radio.c
+  encoder.c
   )
 
 # pull in common dependencies

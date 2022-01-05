@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "radio.h"
+#include "encoder.h"
 
 #ifndef PICO_DEFAULT_LED_PIN
 #warning blink example requires a board with a regular LED
@@ -963,74 +964,20 @@ int main() {
     // configure mcp23008 GPIO as outputs
     write_register_mcp23008(0, 0x00);
 
-    gpio_init(ENC1A);
-    gpio_set_dir(ENC1A, GPIO_IN);
-    gpio_pull_up(ENC1A);
-    // configuring Encoder1 B
-    gpio_init(ENC1B);
-    gpio_set_dir(ENC1B, GPIO_IN);
-    gpio_pull_up(ENC1B);
-    // ENC1 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC1A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC1B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    encoder rit_enc = encoder_init(ENC1A, ENC1B);
+    encoder_enable_irq(rit_enc, gpio_callback);
 
-    // configuring Encoder2 A
-    gpio_init(ENC2A);
-    gpio_set_dir(ENC2A, GPIO_IN);
-    gpio_pull_up(ENC2A);
-    // configuring Encoder2 B
-    gpio_init(ENC2B);
-    gpio_set_dir(ENC2B, GPIO_IN);
-    gpio_pull_up(ENC2B);
-    // ENC2 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC2A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC2B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    encoder rxgain_enc = encoder_init(ENC2A, ENC2B);
+    encoder_enable_irq(rxgain_enc, gpio_callback);
 
-    // configuring Encoder3 A
-    gpio_init(ENC3A);
-    gpio_set_dir(ENC3A, GPIO_IN);
-    gpio_pull_up(ENC3A);
-    // configuring Encoder3 B
-    gpio_init(ENC3B);
-    gpio_set_dir(ENC3B, GPIO_IN);
-    gpio_pull_up(ENC3B);
-    // ENC3 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC3A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC3B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    encoder vfo_enc = encoder_init(ENC3A, ENC3B);
+    encoder_enable_irq(vfo_enc, gpio_callback);
 
-    // configuring Encoder4 A
-    gpio_init(ENC4A);
-    gpio_set_dir(ENC4A, GPIO_IN);
-    gpio_pull_up(ENC4A);
-    // configuring Encoder4 B
-    gpio_init(ENC4B);
-    gpio_set_dir(ENC4B, GPIO_IN);
-    gpio_pull_up(ENC4B);
-    // ENC4 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC4A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC4B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    encoder audio_gain_enc = encoder_init(ENC4A, ENC4B);
+    encoder_enable_irq(audio_gain_enc, gpio_callback);
 
-    // configuring Encoder5 A
-    gpio_init(ENC5A);
-    gpio_set_dir(ENC5A, GPIO_IN);
-    gpio_pull_up(ENC5A);
-    // configuring Encoder5 B
-    gpio_init(ENC5B);
-    gpio_set_dir(ENC5B, GPIO_IN);
-    gpio_pull_up(ENC5B);
-    // ENC5 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC5A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC5B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    encoder zoom_enc = encoder_init(ENC5A, ENC5B);
+    encoder_enable_irq(zoom_enc, gpio_callback);
 
     /* ----------------------- Configure 4X4 Keypad
      * ------------------------------------*/
