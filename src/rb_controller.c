@@ -68,66 +68,9 @@ uint32_t int_status;
 
 void waitforradio();
 
+encoder *encoders[5];
 //--------------------------------------------------------------------------
-#define DIR_NONE 0x0
-// Clockwise step.
-#define DIR_CW 0x10
-// Anti-clockwise step.
-#define DIR_CCW 0x20
 
-#define R_START 0x0
-//#define HALF_STEP
-
-#ifdef HALF_STEP
-// Use the half-step state table (emits a code at 00 and 11)
-#define R_CCW_BEGIN 0x1
-#define R_CW_BEGIN 0x2
-#define R_START_M 0x3
-#define R_CW_BEGIN_M 0x4
-#define R_CCW_BEGIN_M 0x5
-
-const unsigned char ttable[6][4] = {
-    // R_START (00)
-    {R_START_M, R_CW_BEGIN, R_CCW_BEGIN, R_START},
-    // R_CCW_BEGIN
-    {R_START_M | DIR_CCW, R_START, R_CCW_BEGIN, R_START},
-    // R_CW_BEGIN
-    {R_START_M | DIR_CW, R_CW_BEGIN, R_START, R_START},
-    // R_START_M (11)
-    {R_START_M, R_CCW_BEGIN_M, R_CW_BEGIN_M, R_START},
-    // R_CW_BEGIN_M
-    {R_START_M, R_START_M, R_CW_BEGIN_M, R_START | DIR_CW},
-    // R_CCW_BEGIN_M
-    {R_START_M, R_CCW_BEGIN_M, R_START_M, R_START | DIR_CCW},
-};
-#else
-// Use the full-step state table (emits a code at 00 only)
-#define R_CW_FINAL 0x1
-#define R_CW_BEGIN 0x2
-#define R_CW_NEXT 0x3
-#define R_CCW_BEGIN 0x4
-#define R_CCW_FINAL 0x5
-#define R_CCW_NEXT 0x6
-
-const unsigned char ttable[7][4] = {
-    // R_START
-    {R_START, R_CW_BEGIN, R_CCW_BEGIN, R_START},
-    // R_CW_FINAL
-    {R_CW_NEXT, R_START, R_CW_FINAL, R_START | DIR_CW},
-    // R_CW_BEGIN
-    {R_CW_NEXT, R_CW_BEGIN, R_START, R_START},
-    // R_CW_NEXT
-    {R_CW_NEXT, R_CW_BEGIN, R_CW_FINAL, R_START},
-    // R_CCW_BEGIN
-    {R_CCW_NEXT, R_START, R_CCW_BEGIN, R_START},
-    // R_CCW_FINAL
-    {R_CCW_NEXT, R_CCW_FINAL, R_START, R_START | DIR_CCW},
-    // R_CCW_NEXT
-    {R_CCW_NEXT, R_CCW_FINAL, R_CCW_BEGIN, R_START},
-};
-#endif
-
-unsigned char ENC1state, ENC2state, ENC3state, ENC4state, ENC5state;
 volatile int ENC1NewState, ENC2NewState, ENC3NewState, ENC4NewState,
     ENC5NewState;
 volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
@@ -713,63 +656,6 @@ void waitforradio(radio_state *rs) {
   }
 }
 
-//--------------------------------------------------------------------------
-void ENC1_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC1B) << 1) | gpio_get(ENC1A);
-  // Determine new state from the pins and state table.
-  ENC1state = ttable[ENC1state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC1state & 0x30;
-  if (pinstate) {
-    ENC1NewState = (int)pinstate;
-  }
-}
-void ENC2_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC2B) << 1) | gpio_get(ENC2A);
-  // Determine new state from the pins and state table.
-  ENC2state = ttable[ENC2state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC2state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC2NewState = (int)pinstate;
-  }
-}
-void ENC3_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC3B) << 1) | gpio_get(ENC3A);
-  // Determine new state from the pins and state table.
-  ENC3state = ttable[ENC3state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC3state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC3NewState = (int)pinstate;
-  }
-}
-
-void ENC4_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC4B) << 1) | gpio_get(ENC4A);
-  // Determine new state from the pins and state table.
-  ENC4state = ttable[ENC4state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC4state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC4NewState = (int)pinstate;
-  }
-}
-void ENC5_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC5B) << 1) | gpio_get(ENC5A);
-  // Determine new state from the pins and state table.
-  ENC5state = ttable[ENC5state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC5state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC5NewState = (int)pinstate;
-  }
-}
-
 void Keypad4X4_callback_Handler(uint gpio) {
     // printf("Keypad4X4_callback_Handler: %d\n", gpio);
     kp_gpio = gpio;
@@ -790,15 +676,20 @@ void gpio_callback(uint gpio, uint32_t events) {
     }
 
     if ((gpio == ENC1A) || (gpio == ENC1B)) {
-        ENC1_callback_Handler();
+        encoder *enc = encoders[0];
+        encoder_callback_handler(enc);
     } else if ((gpio == ENC2A) || (gpio == ENC2B)) {
-        ENC2_callback_Handler();
+        encoder *enc = encoders[1];
+        encoder_callback_handler(enc);
     } else if ((gpio == ENC3A) || (gpio == ENC3B)) {
-        ENC3_callback_Handler();
+        encoder *enc = encoders[2];
+        encoder_callback_handler(enc);
     } else if ((gpio == ENC4A) || (gpio == ENC4B)) {
-        ENC4_callback_Handler();
+        encoder *enc = encoders[3];
+        encoder_callback_handler(enc);
     } else if ((gpio == ENC5A) || (gpio == ENC5B)) {
-        ENC5_callback_Handler();
+        encoder *enc = encoders[4];
+        encoder_callback_handler(enc);
     }
     restore_interrupts(int_status);
 }
@@ -964,20 +855,25 @@ int main() {
     // configure mcp23008 GPIO as outputs
     write_register_mcp23008(0, 0x00);
 
-    encoder rit_enc = encoder_init(ENC1A, ENC1B);
+    encoder *rit_enc = encoder_init(ENC1A, ENC1B);
     encoder_enable_irq(rit_enc, gpio_callback);
+    encoders[0] = rit_enc;
 
-    encoder rxgain_enc = encoder_init(ENC2A, ENC2B);
+    encoder *rxgain_enc = encoder_init(ENC2A, ENC2B);
     encoder_enable_irq(rxgain_enc, gpio_callback);
+    encoders[1] = rxgain_enc;
 
-    encoder vfo_enc = encoder_init(ENC3A, ENC3B);
+    encoder *vfo_enc = encoder_init(ENC3A, ENC3B);
     encoder_enable_irq(vfo_enc, gpio_callback);
+    encoders[2] = vfo_enc;
 
-    encoder audio_gain_enc = encoder_init(ENC4A, ENC4B);
+    encoder *audio_gain_enc = encoder_init(ENC4A, ENC4B);
     encoder_enable_irq(audio_gain_enc, gpio_callback);
+    encoders[3] = audio_gain_enc;
 
-    encoder zoom_enc = encoder_init(ENC5A, ENC5B);
+    encoder *zoom_enc = encoder_init(ENC5A, ENC5B);
     encoder_enable_irq(zoom_enc, gpio_callback);
+    encoders[4] = zoom_enc;
 
     /* ----------------------- Configure 4X4 Keypad
      * ------------------------------------*/
