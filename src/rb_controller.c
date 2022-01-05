@@ -71,8 +71,6 @@ void waitforradio();
 encoder *encoders[5];
 //--------------------------------------------------------------------------
 
-volatile int ENC1NewState, ENC2NewState, ENC3NewState, ENC4NewState,
-    ENC5NewState;
 volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
@@ -183,16 +181,17 @@ void setup_input(uint gpio_irq) {
   // int int_values = get_interrupt_values();
 }
 
-void RIT_ENC_Handler(radio_state *rs) { // RIT
+void RIT_ENC_Handler(radio_state *rs, encoder *enc) { // RIT
   int s = 0;
+
   int_status = save_and_disable_interrupts();
-  if (ENC4NewState == 32) {
+  if (enc->state == 32) {
     s = 1;
   }
-  if (ENC4NewState == 16) {
+  if (enc->state == 16) {
     s = -1;
   }
-  ENC4NewState = 0;
+  enc->state = 0;
   restore_interrupts(int_status);
 
   if (s != 0) {
@@ -220,17 +219,19 @@ void RIT_ENC_Handler(radio_state *rs) { // RIT
   }
 
 }
-void RXGAIN_ENC_Handler(radio_state *rs) { // RX Gain
+void RXGAIN_ENC_Handler(radio_state *rs, encoder *enc) { // RX Gain
   int s = 0;
   int_status = save_and_disable_interrupts();
-  if (ENC2NewState == 32) {
+
+  if (enc->state == 32) {
     s = 1;
   }
-  if (ENC2NewState == 16) {
+  if (enc->state == 16) {
     s = -1;
   }
-  ENC2NewState = 0;
+  enc->state = 0;
   restore_interrupts(int_status);
+
   if (!rs->drive_enable) {
     if (s != 0) {
       // Take action here
@@ -263,16 +264,17 @@ void writemcp23017() {
     write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
 }
 
-void VFO_ENC_Handler(radio_state *rs) { // VFO Up-Down
+void VFO_ENC_Handler(radio_state *rs, encoder *enc) { // VFO Up-Down
   int s = 0;
+
   int_status = save_and_disable_interrupts();
-  if (ENC3NewState == 32) {
+  if (enc->state == 32) {
     s = 1;
   }
-  if (ENC3NewState == 16) {
+  if (enc->state == 16) {
     s = -1;
   }
-  ENC3NewState = 0;
+  enc->state = 0;
   restore_interrupts(int_status);
 
   if (s != 0) {
@@ -288,16 +290,16 @@ void VFO_ENC_Handler(radio_state *rs) { // VFO Up-Down
     switchLPF(rs, f);
   }
 }
-void Audio_ENC_Handler(radio_state *rs) { // Audio
+void Audio_ENC_Handler(radio_state *rs, encoder *enc) { // Audio
   int s = 0;
   int_status = save_and_disable_interrupts();
-  if (ENC1NewState == 32) {
+  if (enc->state == 32) {
     s = 1;
   }
-  if (ENC1NewState == 16) {
+  if (enc->state == 16) {
     s = -1;
   }
-  ENC1NewState = 0;
+  enc->state = 0;
   restore_interrupts(int_status);
 
   if (s != 0) {
@@ -316,17 +318,19 @@ void Audio_ENC_Handler(radio_state *rs) { // Audio
   }
 }
 
-void ZOOM_ENC_Handler(radio_state *rs) { // Zoom - Filter
+void ZOOM_ENC_Handler(radio_state *rs, encoder *enc) { // Zoom - Filter
   int s = 0;
+
   int_status = save_and_disable_interrupts();
-  if (ENC5NewState == 32) {
+  if (enc->state == 32) {
     s = 1;
   }
-  if (ENC5NewState == 16) {
+  if (enc->state == 16) {
     s = -1;
   }
-  ENC5NewState = 0;
+  enc->state = 0;
   restore_interrupts(int_status);
+
   if (s != 0) {
     if (!rs->zoom_enable) {
       // Take action here
@@ -932,11 +936,11 @@ int main() {
     switchLPF(rs, f);
 
     while (1) {
-        RIT_ENC_Handler(rs);
-        RXGAIN_ENC_Handler(rs);
-        VFO_ENC_Handler(rs);
-        Audio_ENC_Handler(rs);
-        ZOOM_ENC_Handler(rs);
+        RIT_ENC_Handler(rs, rit_enc);
+        RXGAIN_ENC_Handler(rs, rxgain_enc);
+        VFO_ENC_Handler(rs, vfo_enc);
+        Audio_ENC_Handler(rs, audio_gain_enc);
+        ZOOM_ENC_Handler(rs, zoom_enc);
         I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)
