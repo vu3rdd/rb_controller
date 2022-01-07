@@ -160,6 +160,14 @@ void setup_input(uint gpio_irq) {
 
 void rit_enc_handler(radio_state *rs, encoder *ritenc) {
   static unsigned int rit_last_count;
+  int rit_increment = 50;
+
+  int mode = getMode();
+  if (mode == CWL || mode == CWU) {
+      rit_increment = 10;
+  } else if (mode == LSB || mode == USB) {
+      rit_increment = 100;
+  }
 
   if (ritenc->count != rit_last_count) {
     // Take action here
@@ -168,12 +176,12 @@ void rit_enc_handler(radio_state *rs, encoder *ritenc) {
         rs->rit_val = -1000;
       else {
         // printf("ZZRD;");
-        rs->rit_val -= 100;
+        rs->rit_val -= rit_increment;
       }
     } else {
       if (rs->rit_val < 1000) {
         // printf("ZZRU;");
-        rs->rit_val += 100;
+        rs->rit_val += rit_increment;
       } else
         rs->rit_val = 1000;
     }
