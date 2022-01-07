@@ -161,14 +161,12 @@ void setup_input(uint gpio_irq) {
   // int int_values = get_interrupt_values();
 }
 
-void RIT_ENC_Handler(radio_state *rs) { // RIT
-  static unsigned int last_count;
+void RIT_ENC_Handler(radio_state *rs, encoder *ritenc) { // RIT
+  static unsigned int rit_last_count;
 
-  if (encoders[3]->count != last_count) {
-      printf("lc=%d, c=%d\n", last_count, encoders[3]->count);
-
+  if (ritenc->count != rit_last_count) {
     // Take action here
-    if (encoders[3]->count < last_count) {
+    if (ritenc->count < rit_last_count) {
       if (rs->rit_val <= -1000)
         rs->rit_val = -1000;
       else {
@@ -183,7 +181,7 @@ void RIT_ENC_Handler(radio_state *rs) { // RIT
         rs->rit_val = 1000;
     }
 
-    last_count = encoders[3]->count;
+    rit_last_count = ritenc->count;
     printf("ZZRF%+5d;", rs->rit_val);
     sleep_ms(10);
   }
@@ -920,7 +918,7 @@ int main() {
     /* switchLPF(rs, f); */
 
     while (1) {
-        RIT_ENC_Handler(rs);
+        RIT_ENC_Handler(rs, encoders[3]);
         /* ENC2_Handler(rs); */
         /* ENC3_Handler(rs); */
         /* Audio_ENC_Handler(rs); */
