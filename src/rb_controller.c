@@ -186,44 +186,39 @@ void RIT_ENC_Handler(radio_state *rs, encoder *ritenc) { // RIT
     sleep_ms(10);
   }
 }
-void ENC2_Handler(radio_state *rs) { // RX Gain
+void RXGAIN_ENC_Handler(radio_state *rs, encoder *rxgainenc) { // RX Gain
   int s = 0;
-  int_status = save_and_disable_interrupts();
-  if (ENC2NewState == 32) {
-    s = 1;
-  }
-  if (ENC2NewState == 16) {
-    s = -1;
-  }
-  ENC2NewState = 0;
-  restore_interrupts(int_status);
+  static unsigned int rxgain_last_count;
+
   if (!rs->drive_enable) {
-    if (s != 0) {
+    if (rxgainenc->count != rxgain_last_count) {
       // Take action here
-      if (s == -1) {
+      if (rxgainenc->count < rxgain_last_count) {
         rs->rx_gain++;
         if (rs->rx_gain == 48)
           rs->rx_gain = 48;
-      } else if (s == 1) {
+      } else if (rxgainenc->count > rxgain_last_count) {
         if (rs->rx_gain > -12)
           rs->rx_gain--;
       }
       printf("RA%02d;", rs->rx_gain);
     }
   } else {
-    if (s != 0) {
+    if (rxgainenc->count != rxgain_last_count) {
       // Take action here
-      if (s == 1) {
+      if (rxgainenc->count > rxgain_last_count) {
         rs->tx_gain++;
         if (rs->tx_gain >= 100)
           rs->tx_gain = 100;
-      } else if (s == -1) {
+      } else if (rxgainenc->count < rxgain_last_count) {
         if (rs->tx_gain > 0)
           rs->tx_gain--;
       }
       printf("PC%03d;", rs->tx_gain);
     }
   }
+
+  rxgain_last_count = rxgainenc->count;
 }
 void writemcp23017() {
     write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
@@ -643,11 +638,11 @@ void gpio_callback(uint gpio, uint32_t events) {
 
     if ((gpio == ENC1A) || (gpio == ENC1B)) {
         encoder_isr(encoders[0]);
-    } else if ((gpio == ENC2A) || (gpio == ENC2B)) {
+    } else if ((gpio == RXGAIN_ENC_A) || (gpio == RXGAIN_ENC_B)) {
         encoder_isr(encoders[1]);
     } else if ((gpio == ENC3A) || (gpio == ENC3B)) {
         encoder_isr(encoders[2]);
-    } else if ((gpio == ENC4A) || (gpio == ENC4B)) {
+    } else if ((gpio == RIT_ENC_A) || (gpio == RIT_ENC_B)) {
         encoder_isr(encoders[3]);
     } else if ((gpio == ENC5A) || (gpio == ENC5B)) {
         encoder_isr(encoders[4]);
@@ -824,14 +819,14 @@ int main() {
     /* gpio_set_irq_enabled_with_callback( */
     /*     ENC1B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
 
-    /* encoder *enc1 = encoder_init(ENC2A, ENC2B); */
-    /* encoders[1] = enc1; */
+    encoder *rxgain_enc = encoder_init(RXGAIN_ENC_A, RXGAIN_ENC_B);
+    encoders[1] = rxgain_enc;
 
-    /* // ENC1 IRQ */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC2A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC2B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    // ENC1 IRQ
+    gpio_set_irq_enabled_with_callback(
+        RXGAIN_ENC_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(
+        RXGAIN_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     /* encoder *enc2 = encoder_init(ENC3A, ENC3B); */
     /* encoders[2] = enc2; */
@@ -842,14 +837,14 @@ int main() {
     /* gpio_set_irq_enabled_with_callback( */
     /*     ENC3B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
 
-    encoder *enc3 = encoder_init(ENC4A, ENC4B);
-    encoders[3] = enc3;
+    encoder *rit_enc = encoder_init(RIT_ENC_A, RIT_ENC_B);
+    encoders[3] = rit_enc;
 
-    // ENC3 IRQ
+    // RIT_ENC IRQ
     gpio_set_irq_enabled_with_callback(
-        ENC4A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+        RIT_ENC_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(
-        ENC4B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+        RIT_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     /* encoder *enc4 = encoder_init(ENC5A, ENC5B); */
     /* encoders[4] = enc4; */
@@ -918,8 +913,8 @@ int main() {
     /* switchLPF(rs, f); */
 
     while (1) {
-        RIT_ENC_Handler(rs, encoders[3]);
-        /* ENC2_Handler(rs); */
+        RIT_ENC_Handler(rs, rit_enc);
+        RXGAIN_ENC_Handler(rs, rxgain_enc);
         /* ENC3_Handler(rs); */
         /* Audio_ENC_Handler(rs); */
         /* ENC5_Handler(rs); */

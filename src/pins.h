@@ -4,14 +4,14 @@
 #define ENC1A 19
 #define ENC1B 18
 
-#define ENC2A 16
-#define ENC2B 17
+#define RXGAIN_ENC_A 16
+#define RXGAIN_ENC_B 17
 
 #define ENC3A 11
 #define ENC3B 10
 
-#define ENC4A 12
-#define ENC4B 13
+#define RIT_ENC_A 12
+#define RIT_ENC_B 13
 
 #define ENC5A 14
 #define ENC5B 15
