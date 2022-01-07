@@ -1,8 +1,8 @@
 #ifndef PINS_INCLUDE
 #define PINS_INCLUDE
 
-#define ENC1A 19
-#define ENC1B 18
+#define AUDIO_GAIN_ENC_A 19
+#define AUDIO_GAIN_ENC_B 18
 
 #define RXGAIN_ENC_A 16
 #define RXGAIN_ENC_B 17

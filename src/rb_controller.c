@@ -187,7 +187,6 @@ void RIT_ENC_Handler(radio_state *rs, encoder *ritenc) { // RIT
   }
 }
 void RXGAIN_ENC_Handler(radio_state *rs, encoder *rxgainenc) { // RX Gain
-  int s = 0;
   static unsigned int rxgain_last_count;
 
   if (!rs->drive_enable) {
@@ -249,32 +248,25 @@ void ENC3_Handler(radio_state *rs) { // VFO Up-Down
     switchLPF(rs, f);
   }
 }
-void Audio_ENC_Handler(radio_state *rs) { // Audio
-  int s = 0;
-  int_status = save_and_disable_interrupts();
-  if (ENC1NewState == 32) {
-    s = 1;
-  }
-  if (ENC1NewState == 16) {
-    s = -1;
-  }
-  ENC1NewState = 0;
-  restore_interrupts(int_status);
+void Audio_Gain_ENC_Handler(radio_state *rs, encoder *audio_gain_enc) { // Audio
+  static unsigned int audio_gain_last_count;
 
-  if (s != 0) {
+  if (audio_gain_enc->count != audio_gain_last_count) {
       // Take action here
       // get audio gain
       rs->audio_gain = getAudioGain();
-      if (s == 1) {
+      if (audio_gain_enc->count > audio_gain_last_count) {
           rs->audio_gain++;
           if (rs->audio_gain == 101)
               rs->audio_gain = 100;
-      } else if (s == -1) {
+      } else if (audio_gain_enc->count < audio_gain_last_count) {
           if (rs->audio_gain > 0)
               rs->audio_gain--;
       }
       printf("ZZAG%03d;", rs->audio_gain);
   }
+
+  audio_gain_last_count = audio_gain_enc->count;
 }
 
 void ENC5_Handler(radio_state *rs) { // Zoom - Filter
@@ -636,7 +628,7 @@ void gpio_callback(uint gpio, uint32_t events) {
         // printf("gpio_callback gpio = %d\n",gpio);
     }
 
-    if ((gpio == ENC1A) || (gpio == ENC1B)) {
+    if ((gpio == AUDIO_GAIN_ENC_A) || (gpio == AUDIO_GAIN_ENC_B)) {
         encoder_isr(encoders[0]);
     } else if ((gpio == RXGAIN_ENC_A) || (gpio == RXGAIN_ENC_B)) {
         encoder_isr(encoders[1]);
@@ -810,14 +802,14 @@ int main() {
     // configure mcp23008 GPIO as outputs
     write_register_mcp23008(0, 0x00);
 
-    /* encoder *enc0 = encoder_init(ENC1A, ENC1B); */
-    /* encoders[0] = enc0; */
+    encoder *audio_gain_enc = encoder_init(AUDIO_GAIN_ENC_A, AUDIO_GAIN_ENC_B);
+    encoders[0] = audio_gain_enc;
 
-    /* // ENC0 IRQ */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC1A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC1B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    // ENC0 IRQ
+    gpio_set_irq_enabled_with_callback(
+        AUDIO_GAIN_ENC_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(
+        AUDIO_GAIN_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     encoder *rxgain_enc = encoder_init(RXGAIN_ENC_A, RXGAIN_ENC_B);
     encoders[1] = rxgain_enc;
@@ -915,8 +907,9 @@ int main() {
     while (1) {
         RIT_ENC_Handler(rs, rit_enc);
         RXGAIN_ENC_Handler(rs, rxgain_enc);
+        Audio_Gain_ENC_Handler(rs, audio_gain_enc);
+
         /* ENC3_Handler(rs); */
-        /* Audio_ENC_Handler(rs); */
         /* ENC5_Handler(rs); */
         I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
