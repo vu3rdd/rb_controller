@@ -269,21 +269,13 @@ void Audio_Gain_ENC_Handler(radio_state *rs, encoder *audio_gain_enc) { // Audio
   audio_gain_last_count = audio_gain_enc->count;
 }
 
-void ENC5_Handler(radio_state *rs) { // Zoom - Filter
-  int s = 0;
-  int_status = save_and_disable_interrupts();
-  if (ENC5NewState == 32) {
-    s = 1;
-  }
-  if (ENC5NewState == 16) {
-    s = -1;
-  }
-  ENC5NewState = 0;
-  restore_interrupts(int_status);
-  if (s != 0) {
+void Filter_ENC_Handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
+  static unsigned int filter_last_count;
+
+  if (filter_enc->count != filter_last_count) {
     if (!rs->zoom_enable) {
       // Take action here
-      if (s == 1) {
+      if (filter_enc->count > filter_last_count) {
         rs->filter_val += 1;
         if (rs->filter_val >= 8)
           rs->filter_val = 8;
@@ -296,7 +288,7 @@ void ENC5_Handler(radio_state *rs) { // Zoom - Filter
       printf("ZZFI%02d;", rs->filter_val);
       // printf("FW%04d;", filter_val);
     } else {
-      if (s == -1) {
+      if (filter_enc->count < filter_last_count) {
         rs->zoom_val++;
         if (rs->zoom_val > 8)
           rs->zoom_val = 8;
@@ -309,6 +301,8 @@ void ENC5_Handler(radio_state *rs) { // Zoom - Filter
       printf("ZZPY%03d;", rs->zoom_val);
     }
   }
+
+  filter_last_count = filter_enc->count;
 }
 
 void keypad_Handler(radio_state *rs) {
@@ -636,7 +630,7 @@ void gpio_callback(uint gpio, uint32_t events) {
         encoder_isr(encoders[2]);
     } else if ((gpio == RIT_ENC_A) || (gpio == RIT_ENC_B)) {
         encoder_isr(encoders[3]);
-    } else if ((gpio == ENC5A) || (gpio == ENC5B)) {
+    } else if ((gpio == FILTER_ENC_A) || (gpio == FILTER_ENC_B)) {
         encoder_isr(encoders[4]);
     }
     restore_interrupts(int_status);
@@ -805,7 +799,7 @@ int main() {
     encoder *audio_gain_enc = encoder_init(AUDIO_GAIN_ENC_A, AUDIO_GAIN_ENC_B);
     encoders[0] = audio_gain_enc;
 
-    // ENC0 IRQ
+    // audio gain ENC IRQ
     gpio_set_irq_enabled_with_callback(
         AUDIO_GAIN_ENC_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(
@@ -814,7 +808,7 @@ int main() {
     encoder *rxgain_enc = encoder_init(RXGAIN_ENC_A, RXGAIN_ENC_B);
     encoders[1] = rxgain_enc;
 
-    // ENC1 IRQ
+    // Rx gain ENC IRQ
     gpio_set_irq_enabled_with_callback(
         RXGAIN_ENC_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(
@@ -838,14 +832,14 @@ int main() {
     gpio_set_irq_enabled_with_callback(
         RIT_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
-    /* encoder *enc4 = encoder_init(ENC5A, ENC5B); */
-    /* encoders[4] = enc4; */
+    encoder *filter_enc = encoder_init(FILTER_ENC_A, FILTER_ENC_B);
+    encoders[4] = filter_enc;
 
-    /* // ENC4 IRQ */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC5A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC5B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    // Filter/ZOOM ENC IRQ
+    gpio_set_irq_enabled_with_callback(
+        FILTER_ENC_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(
+        FILTER_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
 
     /* ----------------------- Configure 4X4 Keypad
@@ -908,9 +902,9 @@ int main() {
         RIT_ENC_Handler(rs, rit_enc);
         RXGAIN_ENC_Handler(rs, rxgain_enc);
         Audio_Gain_ENC_Handler(rs, audio_gain_enc);
-
+        Filter_ENC_Handler(rs, filter_enc);
         /* ENC3_Handler(rs); */
-        /* ENC5_Handler(rs); */
+
         I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)

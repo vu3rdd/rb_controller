@@ -13,8 +13,8 @@
 #define RIT_ENC_A 12
 #define RIT_ENC_B 13
 
-#define ENC5A 14
-#define ENC5B 15
+#define FILTER_ENC_A 14
+#define FILTER_ENC_B 15
 
 #define KPR0 2
 #define KPR1 3
