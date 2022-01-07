@@ -163,7 +163,7 @@ void rit_enc_handler(radio_state *rs, encoder *ritenc) {
 
   if (ritenc->count != rit_last_count) {
     // Take action here
-    if (ritenc->count < rit_last_count) {
+    if (ritenc->count > rit_last_count) {
       if (rs->rit_val <= -1000)
         rs->rit_val = -1000;
       else {
@@ -190,11 +190,11 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
   if (!rs->drive_enable) {
     if (rxgainenc->count != rxgain_last_count) {
       // Take action here
-      if (rxgainenc->count < rxgain_last_count) {
+      if (rxgainenc->count > rxgain_last_count) {
         rs->rx_gain++;
         if (rs->rx_gain == 48)
           rs->rx_gain = 48;
-      } else if (rxgainenc->count > rxgain_last_count) {
+      } else if (rxgainenc->count < rxgain_last_count) {
         if (rs->rx_gain > -12)
           rs->rx_gain--;
       }
@@ -203,11 +203,11 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
   } else {
     if (rxgainenc->count != rxgain_last_count) {
       // Take action here
-      if (rxgainenc->count > rxgain_last_count) {
+      if (rxgainenc->count < rxgain_last_count) {
         rs->tx_gain++;
         if (rs->tx_gain >= 100)
           rs->tx_gain = 100;
-      } else if (rxgainenc->count < rxgain_last_count) {
+      } else if (rxgainenc->count > rxgain_last_count) {
         if (rs->tx_gain > 0)
           rs->tx_gain--;
       }
@@ -227,10 +227,10 @@ void vfo_enc_handler(radio_state *rs, encoder *vfo_enc) {
 
   if (vfo_enc->count != vfo_last_count) {
     // Take action here
-    if (vfo_enc->count > vfo_last_count) {
+    if (vfo_enc->count < vfo_last_count) {
       printf("ZZAF01;");
     }
-    if (vfo_enc->count < vfo_last_count) {
+    if (vfo_enc->count > vfo_last_count) {
       printf("ZZAE01;");
     }
     // sleep_ms(10);
@@ -248,11 +248,11 @@ void audio_gain_enc_handler(radio_state *rs, encoder *audio_gain_enc) {
       // Take action here
       // get audio gain
       rs->audio_gain = getAudioGain();
-      if (audio_gain_enc->count > audio_gain_last_count) {
+      if (audio_gain_enc->count < audio_gain_last_count) {
           rs->audio_gain++;
           if (rs->audio_gain == 101)
               rs->audio_gain = 100;
-      } else if (audio_gain_enc->count < audio_gain_last_count) {
+      } else if (audio_gain_enc->count > audio_gain_last_count) {
           if (rs->audio_gain > 0)
               rs->audio_gain--;
       }
@@ -268,7 +268,7 @@ void filter_enc_handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
   if (filter_enc->count != filter_last_count) {
     if (!rs->zoom_enable) {
       // Take action here
-      if (filter_enc->count > filter_last_count) {
+      if (filter_enc->count < filter_last_count) {
         rs->filter_val += 1;
         if (rs->filter_val >= 8)
           rs->filter_val = 8;
@@ -281,7 +281,7 @@ void filter_enc_handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
       printf("ZZFI%02d;", rs->filter_val);
       // printf("FW%04d;", filter_val);
     } else {
-      if (filter_enc->count < filter_last_count) {
+      if (filter_enc->count > filter_last_count) {
         rs->zoom_val++;
         if (rs->zoom_val > 8)
           rs->zoom_val = 8;
