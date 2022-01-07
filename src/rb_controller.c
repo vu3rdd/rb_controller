@@ -14,6 +14,8 @@
 #include <string.h>
 
 #include "radio.h"
+#include "encoder.h"
+#include "pins.h"
 
 #ifndef PICO_DEFAULT_LED_PIN
 #warning blink example requires a board with a regular LED
@@ -21,34 +23,11 @@
 const uint LED_PIN = PICO_DEFAULT_LED_PIN;
 #endif
 
-#define ENC1A 19
-#define ENC1B 18
-
-#define ENC2A 16
-#define ENC2B 17
-
-#define ENC3A 11
-#define ENC3B 10
-
-#define ENC4A 12
-#define ENC4B 13
-
-#define ENC5A 14
-#define ENC5B 15
-
-#define KPR0 2
-#define KPR1 3
-#define KPR2 5
-#define KPR3 7
-
-#define KPC0 0
-#define KPC1 1
-#define KPC2 4
-#define KPC3 6
-#define KPCX 99 // undefined column number!
 
 int rows[] = { KPR0, KPR1, KPR2, KPR3 };
 int cols[] = { KPC0, KPC1, KPC2, KPC3 };
+
+encoder *encoders[5];
 
 #define PTT_IN 20
 #define PWM 22
@@ -68,63 +47,6 @@ uint32_t int_status;
 void waitforradio();
 
 //--------------------------------------------------------------------------
-#define DIR_NONE 0x0
-// Clockwise step.
-#define DIR_CW 0x10
-// Anti-clockwise step.
-#define DIR_CCW 0x20
-
-#define R_START 0x0
-//#define HALF_STEP
-
-#ifdef HALF_STEP
-// Use the half-step state table (emits a code at 00 and 11)
-#define R_CCW_BEGIN 0x1
-#define R_CW_BEGIN 0x2
-#define R_START_M 0x3
-#define R_CW_BEGIN_M 0x4
-#define R_CCW_BEGIN_M 0x5
-
-const unsigned char ttable[6][4] = {
-    // R_START (00)
-    {R_START_M, R_CW_BEGIN, R_CCW_BEGIN, R_START},
-    // R_CCW_BEGIN
-    {R_START_M | DIR_CCW, R_START, R_CCW_BEGIN, R_START},
-    // R_CW_BEGIN
-    {R_START_M | DIR_CW, R_CW_BEGIN, R_START, R_START},
-    // R_START_M (11)
-    {R_START_M, R_CCW_BEGIN_M, R_CW_BEGIN_M, R_START},
-    // R_CW_BEGIN_M
-    {R_START_M, R_START_M, R_CW_BEGIN_M, R_START | DIR_CW},
-    // R_CCW_BEGIN_M
-    {R_START_M, R_CCW_BEGIN_M, R_START_M, R_START | DIR_CCW},
-};
-#else
-// Use the full-step state table (emits a code at 00 only)
-#define R_CW_FINAL 0x1
-#define R_CW_BEGIN 0x2
-#define R_CW_NEXT 0x3
-#define R_CCW_BEGIN 0x4
-#define R_CCW_FINAL 0x5
-#define R_CCW_NEXT 0x6
-
-const unsigned char ttable[7][4] = {
-    // R_START
-    {R_START, R_CW_BEGIN, R_CCW_BEGIN, R_START},
-    // R_CW_FINAL
-    {R_CW_NEXT, R_START, R_CW_FINAL, R_START | DIR_CW},
-    // R_CW_BEGIN
-    {R_CW_NEXT, R_CW_BEGIN, R_START, R_START},
-    // R_CW_NEXT
-    {R_CW_NEXT, R_CW_BEGIN, R_CW_FINAL, R_START},
-    // R_CCW_BEGIN
-    {R_CCW_NEXT, R_START, R_CCW_BEGIN, R_START},
-    // R_CCW_FINAL
-    {R_CCW_NEXT, R_CCW_FINAL, R_START, R_START | DIR_CCW},
-    // R_CCW_NEXT
-    {R_CCW_NEXT, R_CCW_FINAL, R_CCW_BEGIN, R_START},
-};
-#endif
 
 unsigned char ENC1state, ENC2state, ENC3state, ENC4state, ENC5state;
 volatile int ENC1NewState, ENC2NewState, ENC3NewState, ENC4NewState,
@@ -240,30 +162,20 @@ void setup_input(uint gpio_irq) {
 }
 
 void RIT_ENC_Handler(radio_state *rs) { // RIT
-  int s = 0;
-  int_status = save_and_disable_interrupts();
-  if (ENC4NewState == 32) {
-    s = 1;
-  }
-  if (ENC4NewState == 16) {
-    s = -1;
-  }
-  ENC4NewState = 0;
-  restore_interrupts(int_status);
+  static unsigned int last_count;
 
-  if (s != 0) {
+  if (encoders[3]->count != last_count) {
+      printf("lc=%d, c=%d\n", last_count, encoders[3]->count);
+
     // Take action here
-    if (s == -1) {
-
+    if (encoders[3]->count < last_count) {
       if (rs->rit_val <= -1000)
         rs->rit_val = -1000;
       else {
         // printf("ZZRD;");
         rs->rit_val -= 100;
       }
-
-    } else if (s == 1) {
-
+    } else {
       if (rs->rit_val < 1000) {
         // printf("ZZRU;");
         rs->rit_val += 100;
@@ -271,10 +183,10 @@ void RIT_ENC_Handler(radio_state *rs) { // RIT
         rs->rit_val = 1000;
     }
 
+    last_count = encoders[3]->count;
     printf("ZZRF%+5d;", rs->rit_val);
     sleep_ms(10);
   }
-
 }
 void ENC2_Handler(radio_state *rs) { // RX Gain
   int s = 0;
@@ -712,63 +624,6 @@ void waitforradio(radio_state *rs) {
   }
 }
 
-//--------------------------------------------------------------------------
-void ENC1_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC1B) << 1) | gpio_get(ENC1A);
-  // Determine new state from the pins and state table.
-  ENC1state = ttable[ENC1state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC1state & 0x30;
-  if (pinstate) {
-    ENC1NewState = (int)pinstate;
-  }
-}
-void ENC2_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC2B) << 1) | gpio_get(ENC2A);
-  // Determine new state from the pins and state table.
-  ENC2state = ttable[ENC2state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC2state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC2NewState = (int)pinstate;
-  }
-}
-void ENC3_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC3B) << 1) | gpio_get(ENC3A);
-  // Determine new state from the pins and state table.
-  ENC3state = ttable[ENC3state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC3state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC3NewState = (int)pinstate;
-  }
-}
-
-void ENC4_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC4B) << 1) | gpio_get(ENC4A);
-  // Determine new state from the pins and state table.
-  ENC4state = ttable[ENC4state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC4state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC4NewState = (int)pinstate;
-  }
-}
-void ENC5_callback_Handler(void) {
-  unsigned char pinstate = (gpio_get(ENC5B) << 1) | gpio_get(ENC5A);
-  // Determine new state from the pins and state table.
-  ENC5state = ttable[ENC5state & 0xf][pinstate];
-  // Return emit bits, ie the generated event
-  pinstate = ENC5state & 0x30;
-  // printf("pinstate = %d\n", pinstate);
-  if (pinstate) {
-    ENC5NewState = (int)pinstate;
-  }
-}
-
 void Keypad4X4_callback_Handler(uint gpio) {
     // printf("Keypad4X4_callback_Handler: %d\n", gpio);
     kp_gpio = gpio;
@@ -789,15 +644,15 @@ void gpio_callback(uint gpio, uint32_t events) {
     }
 
     if ((gpio == ENC1A) || (gpio == ENC1B)) {
-        ENC1_callback_Handler();
+        encoder_isr(encoders[0]);
     } else if ((gpio == ENC2A) || (gpio == ENC2B)) {
-        ENC2_callback_Handler();
+        encoder_isr(encoders[1]);
     } else if ((gpio == ENC3A) || (gpio == ENC3B)) {
-        ENC3_callback_Handler();
+        encoder_isr(encoders[2]);
     } else if ((gpio == ENC4A) || (gpio == ENC4B)) {
-        ENC4_callback_Handler();
+        encoder_isr(encoders[3]);
     } else if ((gpio == ENC5A) || (gpio == ENC5B)) {
-        ENC5_callback_Handler();
+        encoder_isr(encoders[4]);
     }
     restore_interrupts(int_status);
 }
@@ -903,7 +758,6 @@ void PTT_Handler() {
 /*     return true; */
 /* } */
 
-
 int main() {
     stdio_init_all();
     stdio_usb_init();
@@ -963,74 +817,51 @@ int main() {
     // configure mcp23008 GPIO as outputs
     write_register_mcp23008(0, 0x00);
 
-    gpio_init(ENC1A);
-    gpio_set_dir(ENC1A, GPIO_IN);
-    gpio_pull_up(ENC1A);
-    // configuring Encoder1 B
-    gpio_init(ENC1B);
-    gpio_set_dir(ENC1B, GPIO_IN);
-    gpio_pull_up(ENC1B);
-    // ENC1 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC1A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC1B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    /* encoder *enc0 = encoder_init(ENC1A, ENC1B); */
+    /* encoders[0] = enc0; */
 
-    // configuring Encoder2 A
-    gpio_init(ENC2A);
-    gpio_set_dir(ENC2A, GPIO_IN);
-    gpio_pull_up(ENC2A);
-    // configuring Encoder2 B
-    gpio_init(ENC2B);
-    gpio_set_dir(ENC2B, GPIO_IN);
-    gpio_pull_up(ENC2B);
-    // ENC2 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC2A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC2B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    /* // ENC0 IRQ */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC1A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC1B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
 
-    // configuring Encoder3 A
-    gpio_init(ENC3A);
-    gpio_set_dir(ENC3A, GPIO_IN);
-    gpio_pull_up(ENC3A);
-    // configuring Encoder3 B
-    gpio_init(ENC3B);
-    gpio_set_dir(ENC3B, GPIO_IN);
-    gpio_pull_up(ENC3B);
+    /* encoder *enc1 = encoder_init(ENC2A, ENC2B); */
+    /* encoders[1] = enc1; */
+
+    /* // ENC1 IRQ */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC2A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC2B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+
+    /* encoder *enc2 = encoder_init(ENC3A, ENC3B); */
+    /* encoders[2] = enc2; */
+
+    /* // ENC2 IRQ */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC3A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC3B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+
+    encoder *enc3 = encoder_init(ENC4A, ENC4B);
+    encoders[3] = enc3;
+
     // ENC3 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC3A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC3B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-
-    // configuring Encoder4 A
-    gpio_init(ENC4A);
-    gpio_set_dir(ENC4A, GPIO_IN);
-    gpio_pull_up(ENC4A);
-    // configuring Encoder4 B
-    gpio_init(ENC4B);
-    gpio_set_dir(ENC4B, GPIO_IN);
-    gpio_pull_up(ENC4B);
-    // ENC4 IRQ
     gpio_set_irq_enabled_with_callback(
         ENC4A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
     gpio_set_irq_enabled_with_callback(
         ENC4B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
-    // configuring Encoder5 A
-    gpio_init(ENC5A);
-    gpio_set_dir(ENC5A, GPIO_IN);
-    gpio_pull_up(ENC5A);
-    // configuring Encoder5 B
-    gpio_init(ENC5B);
-    gpio_set_dir(ENC5B, GPIO_IN);
-    gpio_pull_up(ENC5B);
-    // ENC5 IRQ
-    gpio_set_irq_enabled_with_callback(
-        ENC5A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-    gpio_set_irq_enabled_with_callback(
-        ENC5B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    /* encoder *enc4 = encoder_init(ENC5A, ENC5B); */
+    /* encoders[4] = enc4; */
+
+    /* // ENC4 IRQ */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC5A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    /* gpio_set_irq_enabled_with_callback( */
+    /*     ENC5B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+
 
     /* ----------------------- Configure 4X4 Keypad
      * ------------------------------------*/
@@ -1085,15 +916,15 @@ int main() {
     /* struct repeating_timer timer; */
     /* add_repeating_timer_ms(-(1000), repeating_timer_callback, NULL, &timer); */
 
-    int f = getVFO('A');
-    switchLPF(rs, f);
+    /* int f = getVFO('A'); */
+    /* switchLPF(rs, f); */
 
     while (1) {
         RIT_ENC_Handler(rs);
-        ENC2_Handler(rs);
-        ENC3_Handler(rs);
-        Audio_ENC_Handler(rs);
-        ENC5_Handler(rs);
+        /* ENC2_Handler(rs); */
+        /* ENC3_Handler(rs); */
+        /* Audio_ENC_Handler(rs); */
+        /* ENC5_Handler(rs); */
         I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)
