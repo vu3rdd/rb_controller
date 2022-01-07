@@ -463,14 +463,16 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZVS0;");
             break;
         case BTN_MHZ_STEP:
-            if (MHZ_enable) {
-                MHZ_enable = false;
-                // printf("ZZTI0;");
-            } else {
-                MHZ_enable = true;
-                // printf("ZZTI1;");
-            }
-            // printf("ZZVS1;");
+            /* if (MHZ_enable) { */
+            /*     MHZ_enable = false; */
+            /*     // printf("ZZTI0;"); */
+            /* } else { */
+            /*     MHZ_enable = true; */
+            /*     // printf("ZZTI1;"); */
+            /* } */
+            /* // printf("ZZVS1;"); */
+            /* break; */
+            printf("#BS");
             break;
         case BTN_VFO_SWAP: {
             printf("ZZVS2;");
