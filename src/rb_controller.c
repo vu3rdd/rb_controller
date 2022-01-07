@@ -480,7 +480,7 @@ void keypad_Handler(radio_state *rs) {
             /* } */
             /* // printf("ZZVS1;"); */
             /* break; */
-            printf("#BS");
+            printf("#BS;");
             break;
         case BTN_VFO_SWAP: {
             printf("ZZVS2;");
