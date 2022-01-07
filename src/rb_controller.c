@@ -158,7 +158,7 @@ void setup_input(uint gpio_irq) {
   // int int_values = get_interrupt_values();
 }
 
-void RIT_ENC_Handler(radio_state *rs, encoder *ritenc) { // RIT
+void rit_enc_handler(radio_state *rs, encoder *ritenc) {
   static unsigned int rit_last_count;
 
   if (ritenc->count != rit_last_count) {
@@ -183,7 +183,8 @@ void RIT_ENC_Handler(radio_state *rs, encoder *ritenc) { // RIT
     sleep_ms(10);
   }
 }
-void RXGAIN_ENC_Handler(radio_state *rs, encoder *rxgainenc) { // RX Gain
+
+void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
   static unsigned int rxgain_last_count;
 
   if (!rs->drive_enable) {
@@ -216,11 +217,12 @@ void RXGAIN_ENC_Handler(radio_state *rs, encoder *rxgainenc) { // RX Gain
 
   rxgain_last_count = rxgainenc->count;
 }
+
 void writemcp23017() {
     write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
 }
 
-void VFO_ENC_Handler(radio_state *rs, encoder *vfo_enc) { // VFO Up-Down
+void vfo_enc_handler(radio_state *rs, encoder *vfo_enc) {
   static unsigned int vfo_last_count;
 
   if (vfo_enc->count != vfo_last_count) {
@@ -239,7 +241,7 @@ void VFO_ENC_Handler(radio_state *rs, encoder *vfo_enc) { // VFO Up-Down
   vfo_last_count = vfo_enc->count;
 }
 
-void Audio_Gain_ENC_Handler(radio_state *rs, encoder *audio_gain_enc) { // Audio
+void audio_gain_enc_handler(radio_state *rs, encoder *audio_gain_enc) {
   static unsigned int audio_gain_last_count;
 
   if (audio_gain_enc->count != audio_gain_last_count) {
@@ -260,7 +262,7 @@ void Audio_Gain_ENC_Handler(radio_state *rs, encoder *audio_gain_enc) { // Audio
   audio_gain_last_count = audio_gain_enc->count;
 }
 
-void Filter_ENC_Handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
+void filter_enc_handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
   static unsigned int filter_last_count;
 
   if (filter_enc->count != filter_last_count) {
@@ -890,11 +892,11 @@ int main() {
     switchLPF(rs, f);
 
     while (1) {
-        RIT_ENC_Handler(rs, rit_enc);
-        RXGAIN_ENC_Handler(rs, rxgain_enc);
-        Audio_Gain_ENC_Handler(rs, audio_gain_enc);
-        Filter_ENC_Handler(rs, filter_enc);
-        VFO_ENC_Handler(rs, vfo_enc);
+        rit_enc_handler(rs, rit_enc);
+        rxgain_enc_handler(rs, rxgain_enc);
+        audio_gain_enc_handler(rs, audio_gain_enc);
+        filter_enc_handler(rs, filter_enc);
+        vfo_enc_handler(rs, vfo_enc);
 
         I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
