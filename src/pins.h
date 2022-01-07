@@ -7,8 +7,8 @@
 #define RXGAIN_ENC_A 16
 #define RXGAIN_ENC_B 17
 
-#define ENC3A 11
-#define ENC3B 10
+#define VFO_ENC_A 11
+#define VFO_ENC_B 10
 
 #define RIT_ENC_A 12
 #define RIT_ENC_B 13

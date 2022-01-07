@@ -223,31 +223,25 @@ void writemcp23017() {
     write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
 }
 
-void ENC3_Handler(radio_state *rs) { // VFO Up-Down
-  int s = 0;
-  int_status = save_and_disable_interrupts();
-  if (ENC3NewState == 32) {
-    s = 1;
-  }
-  if (ENC3NewState == 16) {
-    s = -1;
-  }
-  ENC3NewState = 0;
-  restore_interrupts(int_status);
+void VFO_ENC_Handler(radio_state *rs, encoder *vfo_enc) { // VFO Up-Down
+  static unsigned int vfo_last_count;
 
-  if (s != 0) {
+  if (vfo_enc->count != vfo_last_count) {
     // Take action here
-    if (s == 1) {
+    if (vfo_enc->count > vfo_last_count) {
       printf("ZZAF01;");
     }
-    if (s == -1) {
+    if (vfo_enc->count < vfo_last_count) {
       printf("ZZAE01;");
     }
     // sleep_ms(10);
     int f = getVFO('A');
     switchLPF(rs, f);
   }
+
+  vfo_last_count = vfo_enc->count;
 }
+
 void Audio_Gain_ENC_Handler(radio_state *rs, encoder *audio_gain_enc) { // Audio
   static unsigned int audio_gain_last_count;
 
@@ -626,7 +620,7 @@ void gpio_callback(uint gpio, uint32_t events) {
         encoder_isr(encoders[0]);
     } else if ((gpio == RXGAIN_ENC_A) || (gpio == RXGAIN_ENC_B)) {
         encoder_isr(encoders[1]);
-    } else if ((gpio == ENC3A) || (gpio == ENC3B)) {
+    } else if ((gpio == VFO_ENC_A) || (gpio == VFO_ENC_B)) {
         encoder_isr(encoders[2]);
     } else if ((gpio == RIT_ENC_A) || (gpio == RIT_ENC_B)) {
         encoder_isr(encoders[3]);
@@ -814,14 +808,14 @@ int main() {
     gpio_set_irq_enabled_with_callback(
         RXGAIN_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
-    /* encoder *enc2 = encoder_init(ENC3A, ENC3B); */
-    /* encoders[2] = enc2; */
+    encoder *vfo_enc = encoder_init(VFO_ENC_A, VFO_ENC_B);
+    encoders[2] = vfo_enc;
 
-    /* // ENC2 IRQ */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC3A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
-    /* gpio_set_irq_enabled_with_callback( */
-    /*     ENC3B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback); */
+    // ENC2 IRQ
+    gpio_set_irq_enabled_with_callback(
+        VFO_ENC_A, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(
+        VFO_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
     encoder *rit_enc = encoder_init(RIT_ENC_A, RIT_ENC_B);
     encoders[3] = rit_enc;
@@ -895,15 +889,15 @@ int main() {
     /* struct repeating_timer timer; */
     /* add_repeating_timer_ms(-(1000), repeating_timer_callback, NULL, &timer); */
 
-    /* int f = getVFO('A'); */
-    /* switchLPF(rs, f); */
+    int f = getVFO('A');
+    switchLPF(rs, f);
 
     while (1) {
         RIT_ENC_Handler(rs, rit_enc);
         RXGAIN_ENC_Handler(rs, rxgain_enc);
         Audio_Gain_ENC_Handler(rs, audio_gain_enc);
         Filter_ENC_Handler(rs, filter_enc);
-        /* ENC3_Handler(rs); */
+        VFO_ENC_Handler(rs, vfo_enc);
 
         I2C_Expander1_Handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
