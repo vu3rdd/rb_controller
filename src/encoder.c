@@ -43,13 +43,10 @@ void encoder_isr(encoder *enc) {
     unsigned char pin_state = (gpio_get(enc->pin2) << 1) | gpio_get(enc->pin1);
     unsigned char state = ttable[enc->state & 0x07][pin_state];
 
-    // printf("s=%d, p1=%d, p2=%d\n", state, enc->pin1, enc->pin2);
     if (state & DIR_CW) {
-        printf(".");
         enc->count++;
     }
     if (state & DIR_CCW) {
-        printf("-");
         enc->count--;
     }
 

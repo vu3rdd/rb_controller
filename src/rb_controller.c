@@ -48,9 +48,6 @@ void waitforradio();
 
 //--------------------------------------------------------------------------
 
-unsigned char ENC1state, ENC2state, ENC3state, ENC4state, ENC5state;
-volatile int ENC1NewState, ENC2NewState, ENC3NewState, ENC4NewState,
-    ENC5NewState;
 volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
