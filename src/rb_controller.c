@@ -46,8 +46,6 @@ uint32_t int_status;
 
 void waitforradio();
 
-//--------------------------------------------------------------------------
-
 volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
@@ -575,23 +573,6 @@ void keypad_Handler(radio_state *rs) {
     kp_gpio = KPCX;
 }
 
-void wait_for_ping(void) {
-    char msg[5];
-    memset(msg, '\0', 5);
-
-    gpio_put(LED_PIN, 1);
-    while (true) {
-        for (int i = 0; i < 4; i++) {
-            msg[i] = getchar();
-        }
-        if (strncmp(msg, "PING", 4) == 0) {
-            // got the ping message
-            break;
-        }
-    }
-    gpio_put(LED_PIN, 0);
-}
-
 void waitforradio(radio_state *rs) {
   // return;
   if (1 == 1) {
@@ -840,8 +821,6 @@ int main() {
         FILTER_ENC_B, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
 
-    /* ----------------------- Configure 4X4 Keypad
-     * ------------------------------------*/
     for (int i = 0; i < 4; i++) {
         gpio_init(cols[i]);
         gpio_set_dir(cols[i], GPIO_IN);
@@ -864,21 +843,8 @@ int main() {
     MCP23017_GPIOA_val |= POWER_ON_RELAY;
     writemcp23017();
 
-    /* ----------------------- Configure 4X4 Keypad
-     * ------------------------------------*/
-
-    /* --- while(1) forever scheduler! --- */
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
-    // printf("Stating Controller...");
-
-    // before we send any command to the radio, wait for a "custom"
-    // handshake between the controller and the radio (in this case
-    // the pihpsdr). Once the radio is able to open the serial port,
-    // it would send a "PING" message (4 character). Controller would
-    // wait for the "PING" string from the serial port before sending
-    // any command to the radio.
-    // wait_for_ping();
 
     // initialize radio state
     gpio_put(LED_PIN, 1);
