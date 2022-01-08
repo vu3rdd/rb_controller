@@ -154,33 +154,33 @@ void rit_enc_handler(radio_state *rs, encoder *ritenc) {
   static unsigned int rit_last_count;
   int rit_increment = 50;
 
-  int mode = getMode();
-  if (mode == CWL || mode == CWU) {
-      rit_increment = 10;
-  } else if (mode == LSB || mode == USB) {
-      rit_increment = 100;
-  }
-
   if (ritenc->count != rit_last_count) {
-    // Take action here
-    if (ritenc->count > rit_last_count) {
-      if (rs->rit_val <= -1000)
-        rs->rit_val = -1000;
-      else {
-        // printf("ZZRD;");
-        rs->rit_val -= rit_increment;
+      // Take action here
+      int mode = getMode();
+      if (mode == CWL || mode == CWU) {
+          rit_increment = 10;
+      } else if (mode == LSB || mode == USB) {
+          rit_increment = 100;
       }
-    } else {
-      if (rs->rit_val < 1000) {
-        // printf("ZZRU;");
-        rs->rit_val += rit_increment;
-      } else
-        rs->rit_val = 1000;
-    }
 
-    rit_last_count = ritenc->count;
-    printf("ZZRF%+5d;", rs->rit_val);
-    sleep_ms(10);
+      if (ritenc->count > rit_last_count) {
+          if (rs->rit_val <= -1000)
+              rs->rit_val = -1000;
+          else {
+              // printf("ZZRD;");
+              rs->rit_val -= rit_increment;
+          }
+      } else {
+          if (rs->rit_val < 1000) {
+              // printf("ZZRU;");
+              rs->rit_val += rit_increment;
+          } else
+              rs->rit_val = 1000;
+      }
+
+      rit_last_count = ritenc->count;
+      printf("ZZRF%+5d;", rs->rit_val);
+      sleep_ms(10);
   }
 }
 
@@ -617,19 +617,34 @@ void i2c_expander_handler(radio_state *rs) {
     interrupt_on_mcp0 = false;
     // int pin = get_last_interrupt_pin();
     // int int_values = get_interrupt_values();
-    int input_values_ok; // = update_input_values();
-    input_values_ok = read_register(MCP23017_GPIOB);
-    if (input_values_ok != oldpin) {
-        oldpin = input_values_ok;
+    int input_values_1; // = update_input_values();
+    input_values_1 = read_register(MCP23017_GPIOB);
+    bool long_press = false;
 
-        // printf("InputOK:%d\n", input_values_ok);
-        switch (input_values_ok) {
+    if (input_values_1 != oldpin) {
+        oldpin = input_values_1;
+
+        sleep_ms(250);
+        // read again to see if we get the same values
+        int input_values_2 = read_register(MCP23017_GPIOB);
+
+        if (input_values_2 == input_values_1) {
+            // long press
+            long_press = true;
+        }
+
+        // printf("InputOK:%d\n", input_values_1);
+        switch (input_values_1) {
         case ENC_RIT_SW: {
-            rs->rit = !rs->rit;
-            if (rs->rit) {
-                printf("ZZRT1;");
+            if (long_press) {
+                printf("ZZRC;");
             } else {
-                printf("ZZRT0;");
+                rs->rit = !rs->rit;
+                if (rs->rit) {
+                    printf("ZZRT1;");
+                } else {
+                    printf("ZZRT0;");
+                }
             }
             break;
         }
