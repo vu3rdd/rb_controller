@@ -636,7 +636,8 @@ void gpio_callback(uint gpio, uint32_t events) {
     }
     restore_interrupts(int_status);
 }
-void I2C_Expander1_Handler(radio_state *rs) {
+
+void i2c_expander_handler(radio_state *rs) {
     static int oldpin = -1;
     interrupt_on_mcp0 = false;
     // int pin = get_last_interrupt_pin();
@@ -902,7 +903,7 @@ int main() {
         filter_enc_handler(rs, filter_enc);
         vfo_enc_handler(rs, vfo_enc);
 
-        I2C_Expander1_Handler(rs);
+        i2c_expander_handler(rs);
         // printf("kp_gpio = %d\n", kp_gpio);
         if (kp_gpio != KPCX)
             keypad_Handler(rs);
