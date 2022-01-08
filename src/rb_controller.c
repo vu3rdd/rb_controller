@@ -697,7 +697,7 @@ void i2c_expander_handler(radio_state *rs) {
     }
 }
 
-void PTT_Handler() {
+void ptt_handler() {
   static int old_ptt = -1;
   int ptt = gpio_get(PTT_IN);
   if (old_ptt != ptt) {
@@ -859,7 +859,8 @@ int main() {
 
     gpio_init(PTT_IN);
     gpio_set_dir(PTT_IN, GPIO_IN);
-    PTT_Handler();
+    ptt_handler();
+
     MCP23017_GPIOA_val |= POWER_ON_RELAY;
     writemcp23017();
 
@@ -904,10 +905,11 @@ int main() {
         vfo_enc_handler(rs, vfo_enc);
 
         i2c_expander_handler(rs);
-        // printf("kp_gpio = %d\n", kp_gpio);
+
         if (kp_gpio != KPCX)
             keypad_Handler(rs);
-        PTT_Handler();
+
+        ptt_handler();
     }
 
     return 0;
