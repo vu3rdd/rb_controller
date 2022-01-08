@@ -35,12 +35,6 @@ encoder *encoders[5];
 unsigned long time = 0;
 const int delayTime = 50; // Delay for every push button may vary
 
-// MCP23017 INPUT
-#define ENC_RIT_SW        251 // 0xFB - 1111 1011  (GPB2)
-#define ENC_ZOOM_SW       127 // 0x7F - 0111 1111  (GPB7)
-#define ENC_MUTE_DRIVE_SW 254 // 0xFE - 1111 1110  (GPB0)
-#define ENC_RX_RFGAIN_SW  253 // 0xFD - 1111 1101  (GPB1)
-
 bool keyer_control = false;
 uint32_t int_status;
 

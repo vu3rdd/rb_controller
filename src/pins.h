@@ -1,8 +1,27 @@
 #ifndef PINS_INCLUDE
 #define PINS_INCLUDE
 
+#define NEW_BUTTON_MAPPING
+
+#ifdef NEW_BUTTON_MAPPING
+
 #define AUDIO_GAIN_ENC_A 19
 #define AUDIO_GAIN_ENC_B 18
+
+#define RIT_ENC_A 12
+#define RIT_ENC_B 13
+
+#else
+
+// old mapping (for VU2XTO)
+
+#define AUDIO_GAIN_ENC_A 12 // 19
+#define AUDIO_GAIN_ENC_B 13 // 18
+
+#define RIT_ENC_A 19 // 12
+#define RIT_ENC_B 18 // 13
+
+#endif
 
 #define RXGAIN_ENC_A 16
 #define RXGAIN_ENC_B 17
@@ -10,8 +29,6 @@
 #define VFO_ENC_A 11
 #define VFO_ENC_B 10
 
-#define RIT_ENC_A 12
-#define RIT_ENC_B 13
 
 #define FILTER_ENC_A 14
 #define FILTER_ENC_B 15
@@ -26,5 +43,22 @@
 #define KPC2 4
 #define KPC3 6
 #define KPCX 99 // undefined column number!
+
+#ifdef NEW_BUTTON_MAPPING
+
+// MCP23017 INPUT
+#define ENC_RIT_SW        251 // 0xFB - 1111 1011  (GPB2)
+#define ENC_MUTE_DRIVE_SW 254 // 0xFE - 1111 1110  (GPB0)
+
+#else
+// old mapping (for VU2XTO)
+
+#define ENC_MUTE_DRIVE_SW 251 // 0xFE - 1111 1110  (GPB0)
+#define ENC_RIT_SW        254 // 0xFB - 1111 1011  (GPB2)
+
+#endif
+
+#define ENC_ZOOM_SW       127 // 0x7F - 0111 1111  (GPB7)
+#define ENC_RX_RFGAIN_SW  253 // 0xFD - 1111 1101  (GPB1)
 
 #endif
