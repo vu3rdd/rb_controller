@@ -501,7 +501,7 @@ void keypad_Handler(radio_state *rs) {
                 int vfoB_int = vfoA + 1000;
 
                 // set vfo B value
-                char vfoB[16];
+                char vfoB[17];
                 sprintf(vfoB, "ZZFB%011d;", vfoB_int);
                 printf("%s", vfoB);
             } else if (mode == LSB || mode == USB) {
@@ -514,7 +514,7 @@ void keypad_Handler(radio_state *rs) {
                 int vfoB_int = vfoA + 5000;
 
                 // set vfo B value
-                char vfoB[16];
+                char vfoB[17];
                 sprintf(vfoB, "ZZFB%011d;", vfoB_int);
                 printf("%s", vfoB);
             }
