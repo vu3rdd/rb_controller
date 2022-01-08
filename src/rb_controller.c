@@ -637,69 +637,65 @@ void gpio_callback(uint gpio, uint32_t events) {
     restore_interrupts(int_status);
 }
 void I2C_Expander1_Handler(radio_state *rs) {
-  // if (interrupt_on_mcp0) {
-  static int oldpin = -1;
-  interrupt_on_mcp0 = false;
-  // int pin = get_last_interrupt_pin();
-  // int int_values = get_interrupt_values();
-  int input_values_ok; // = update_input_values();
-  input_values_ok = read_register(MCP23017_GPIOB);
-  if (input_values_ok != oldpin) {
-    oldpin = input_values_ok;
+    static int oldpin = -1;
+    interrupt_on_mcp0 = false;
+    // int pin = get_last_interrupt_pin();
+    // int int_values = get_interrupt_values();
+    int input_values_ok; // = update_input_values();
+    input_values_ok = read_register(MCP23017_GPIOB);
+    if (input_values_ok != oldpin) {
+        oldpin = input_values_ok;
 
-    // printf("InputOK:%d\n", input_values_ok);
-    switch (input_values_ok) {
-    case ENC_RIT_SW: {
-      rs->rit = !rs->rit;
-      if (rs->rit) {
-        printf("ZZRT1;");
-      } else {
-        printf("ZZRT0;");
-      }
-      break;
+        // printf("InputOK:%d\n", input_values_ok);
+        switch (input_values_ok) {
+        case ENC_RIT_SW: {
+            rs->rit = !rs->rit;
+            if (rs->rit) {
+                printf("ZZRT1;");
+            } else {
+                printf("ZZRT0;");
+            }
+            break;
+        }
+        case ENC_ZOOM_SW: {
+            rs->zoom_enable = true;
+            break;
+        }
+        case ENC_MUTE_DRIVE_SW: {
+            rs->mute = !rs->mute;
+            if (rs->mute) {
+                printf("ZZMA1;");
+            } else {
+                printf("ZZMA0;");
+            }
+            break;
+        }
+        case ENC_RX_RFGAIN_SW: {
+            rs->drive_enable = true;
+            break;
+        }
+        case BTN_FSTEP: {
+            rs->zzac_index = getStepIndex();
+            // cycle through 1, 10, 100, 1k, 10k, 100k, 1M hz
+            rs->zzac_index = (rs->zzac_index + 1) % 7;
+            printf("ZZAC%02d;", rs->zzac_index);
+            break;
+        }
+        case BTN_RXANT: {
+            if (rs->rxant == 0)
+                rs->rxant = 128;
+            else
+                rs->rxant = 0;
+            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+            break;
+        }
+        default:
+            rs->zoom_enable = false;
+            rs->drive_enable = false;
+        }
     }
-    case ENC_ZOOM_SW: {
-      rs->zoom_enable = true;
-      break;
-    }
-    case ENC_MUTE_DRIVE_SW: {
-      rs->mute = !rs->mute;
-      if (rs->mute) {
-
-        printf("ZZMA1;");
-      } else {
-        printf("ZZMA0;");
-      }
-
-      break;
-    }
-    case ENC_RX_RFGAIN_SW: {
-      rs->drive_enable = true;
-      break;
-    }
-
-    case BTN_FSTEP: {
-        rs->zzac_index = getStepIndex();
-        // cycle through 1, 10, 100, 1k, 10k, 100k, 1M hz
-        rs->zzac_index = (rs->zzac_index + 1) % 7;
-
-        printf("ZZAC%02d;", rs->zzac_index);
-        break;
-    }
-    case BTN_RXANT: {
-        if (rs->rxant == 0)
-            rs->rxant = 128;
-        else
-            rs->rxant = 0;
-        write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
-        break;
-    }
-    default:
-      rs->zoom_enable = false;
-      rs->drive_enable = false;
-    }
-  }
 }
+
 void PTT_Handler() {
   static int old_ptt = -1;
   int ptt = gpio_get(PTT_IN);
