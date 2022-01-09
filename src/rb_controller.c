@@ -649,7 +649,7 @@ void i2c_expander_handler(radio_state *rs) {
             break;
         }
         case ENC_ZOOM_SW: {
-            rs->zoom_enable = true;
+            rs->zoom_enable = !rs->zoom_enable;
             break;
         }
         case ENC_MUTE_DRIVE_SW: {
@@ -662,7 +662,7 @@ void i2c_expander_handler(radio_state *rs) {
             break;
         }
         case ENC_RX_RFGAIN_SW: {
-            rs->drive_enable = true;
+            rs->drive_enable = !rs->drive_enable;
             break;
         }
         case BTN_FSTEP: {
@@ -680,9 +680,6 @@ void i2c_expander_handler(radio_state *rs) {
             write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
             break;
         }
-        default:
-            rs->zoom_enable = false;
-            rs->drive_enable = false;
         }
     }
 }
