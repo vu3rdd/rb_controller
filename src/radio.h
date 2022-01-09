@@ -23,7 +23,7 @@ typedef struct radio_state {
     int rit_val;
     bool rit;
     bool zoom_enable;
-    bool drive_enable;
+    int drive_enable;
     int agc_mode;
     int zoom_val;
     uint8_t antsel;
@@ -32,6 +32,7 @@ typedef struct radio_state {
     int zzmd1_index;
     bool power;
     bool mute;
+    int cw_speed;
 } radio_state;
 
 typedef enum mode {

@@ -261,7 +261,7 @@ radio_state *radio_init(void){
     s->rx_gain = 0;
     s->tx_gain = 50;
     s->audio_gain = 25;
-
+    s->cw_speed = 20; // default CW speed is 20 WPM
     s->nb_val = 0;
     s->snb_val = 0;
     s->anf_val = 0;
@@ -273,7 +273,7 @@ radio_state *radio_init(void){
     s->rit_val = 0;
     s->rit = false;
     s->zoom_enable = false;
-    s->drive_enable = false;
+    s->drive_enable = 0;
     s->agc_mode = 0;
     s->zoom_val = 0;
     s->antsel = 0;

@@ -184,35 +184,59 @@ void rit_enc_handler(radio_state *rs, encoder *ritenc) {
   }
 }
 
+// generic encoder that can set CW speed, mic gain
+// single press to toggle to tx drive level
 void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
   static unsigned int rxgain_last_count;
 
-  if (!rs->drive_enable) {
-    if (rxgainenc->count != rxgain_last_count) {
-      // Take action here
-      if (rxgainenc->count > rxgain_last_count) {
-        rs->rx_gain++;
-        if (rs->rx_gain == 48)
-          rs->rx_gain = 48;
-      } else if (rxgainenc->count < rxgain_last_count) {
-        if (rs->rx_gain > -12)
-          rs->rx_gain--;
+  switch (rs->drive_enable) {
+  case 0:
+      // rx gain
+      if (rxgainenc->count != rxgain_last_count) {
+          // Take action here
+          if (rxgainenc->count > rxgain_last_count) {
+              rs->rx_gain++;
+              if (rs->rx_gain == 48)
+                  rs->rx_gain = 48;
+          } else if (rxgainenc->count < rxgain_last_count) {
+              if (rs->rx_gain > -12)
+                  rs->rx_gain--;
+          }
+          printf("RA%02d;", rs->rx_gain);
       }
-      printf("RA%02d;", rs->rx_gain);
-    }
-  } else {
-    if (rxgainenc->count != rxgain_last_count) {
-      // Take action here
-      if (rxgainenc->count < rxgain_last_count) {
-        rs->tx_gain++;
-        if (rs->tx_gain >= 100)
-          rs->tx_gain = 100;
-      } else if (rxgainenc->count > rxgain_last_count) {
-        if (rs->tx_gain > 0)
-          rs->tx_gain--;
+      break;
+  case 1:
+      // tx gain
+      if (rxgainenc->count != rxgain_last_count) {
+          // Take action here
+          if (rxgainenc->count < rxgain_last_count) {
+              rs->tx_gain++;
+              if (rs->tx_gain >= 100)
+                  rs->tx_gain = 100;
+          } else if (rxgainenc->count > rxgain_last_count) {
+              if (rs->tx_gain > 0)
+                  rs->tx_gain--;
+          }
+          printf("PC%03d;", rs->tx_gain);
       }
-      printf("PC%03d;", rs->tx_gain);
-    }
+      break;
+  case 2:
+      // cw speed or mic gain depending on mode
+      // increment by one.
+      // valid values are 0 to 60, so there should be a cap
+      if (rxgainenc->count != rxgain_last_count) {
+          if (rxgainenc->count < rxgain_last_count) {
+              rs->cw_speed++;
+              rs->cw_speed = (rs->cw_speed > 60 ? 60 : rs->cw_speed);
+          } else if (rxgainenc->count > rxgain_last_count) {
+              rs->cw_speed--;
+              rs->cw_speed = (rs->cw_speed < 0 ? 0 : rs->cw_speed);
+          }
+          printf("ZZCS%02d;", rs->cw_speed);
+      }
+      break;
+  default:
+      break;
   }
 
   rxgain_last_count = rxgainenc->count;
@@ -662,7 +686,11 @@ void i2c_expander_handler(radio_state *rs) {
             break;
         }
         case ENC_RX_RFGAIN_SW: {
-            rs->drive_enable = !rs->drive_enable;
+            // toggle between 0, 1 and 2
+            // 0 == rx gain
+            // 1 == tx drive
+            // 2 == cw speed / mic gain (depending on mode)
+            rs->drive_enable = (rs->drive_enable + 1) % 3;
             break;
         }
         case BTN_FSTEP: {
