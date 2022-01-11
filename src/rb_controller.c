@@ -155,32 +155,13 @@ void rit_enc_handler(radio_state *rs, encoder *ritenc) {
   int rit_increment = 10;
 
   if (ritenc->count != rit_last_count) {
-      // Take action here
-      /* int mode = getMode(); */
-      /* if (mode == CWL || mode == CWU) { */
-      /*     rit_increment = 10; */
-      /* } else if (mode == LSB || mode == USB) { */
-      /*     rit_increment = 100; */
-      /* } */
-
       if (ritenc->count > rit_last_count) {
-          if (rs->rit_val <= -1000)
-              rs->rit_val = -1000;
-          else {
-              // printf("ZZRD;");
-              rs->rit_val -= rit_increment;
-          }
+          printf("ZZRD;");
       } else {
-          if (rs->rit_val < 1000) {
-              // printf("ZZRU;");
-              rs->rit_val += rit_increment;
-          } else
-              rs->rit_val = 1000;
+          printf("ZZRU;");
       }
 
       rit_last_count = ritenc->count;
-      printf("ZZRF%+5d;", rs->rit_val);
-      sleep_ms(10);
   }
 }
 
