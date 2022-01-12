@@ -254,9 +254,8 @@ void audio_gain_enc_handler(radio_state *rs, encoder *audio_gain_enc) {
       // get audio gain
       rs->audio_gain = getAudioGain();
       if (audio_gain_enc->count < audio_gain_last_count) {
-          rs->audio_gain++;
-          if (rs->audio_gain == 101)
-              rs->audio_gain = 100;
+          if (rs->audio_gain < 100)
+              rs->audio_gain++;
       } else if (audio_gain_enc->count > audio_gain_last_count) {
           if (rs->audio_gain > 0)
               rs->audio_gain--;
