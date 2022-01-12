@@ -201,21 +201,37 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
           printf("PC%03d;", rs->tx_gain);
       }
       break;
-  case 2:
+  case 2: {
       // cw speed or mic gain depending on mode
       // increment by one.
       // valid values are 0 to 60, so there should be a cap
       if (rxgainenc->count != rxgain_last_count) {
-          if (rxgainenc->count < rxgain_last_count) {
-              rs->cw_speed++;
-              rs->cw_speed = (rs->cw_speed > 60 ? 60 : rs->cw_speed);
-          } else if (rxgainenc->count > rxgain_last_count) {
-              rs->cw_speed--;
-              rs->cw_speed = (rs->cw_speed < 0 ? 0 : rs->cw_speed);
+          int mode = getMode();
+          if (mode == CWL || mode == CWU) {
+              if (rxgainenc->count < rxgain_last_count) {
+                  rs->cw_speed++;
+                  rs->cw_speed = (rs->cw_speed > 60 ? 60 : rs->cw_speed);
+              } else if (rxgainenc->count > rxgain_last_count) {
+                  rs->cw_speed--;
+                  rs->cw_speed = (rs->cw_speed < 0 ? 0 : rs->cw_speed);
+              }
+              printf("ZZCS%02d;", rs->cw_speed);
+          } else if (mode == LSB || mode == USB) {
+              if (rxgainenc->count < rxgain_last_count) {
+                  // increase mic gain
+                  rs->mic_gain++;
+                  rs->mic_gain = (rs->mic_gain > 70 ? 70 : rs->mic_gain);
+              } else if (rxgainenc->count > rxgain_last_count) {
+                  // decrease mic gain
+                  rs->mic_gain--;
+                  rs->mic_gain = (rs->mic_gain < 0 ? 0 : rs->mic_gain);
+              }
+              // send the command
+              printf("ZZMG%03d;", rs->mic_gain);
           }
-          printf("ZZCS%02d;", rs->cw_speed);
       }
       break;
+  }
   default:
       break;
   }
