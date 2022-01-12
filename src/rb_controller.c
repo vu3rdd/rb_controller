@@ -221,9 +221,15 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
               if (rxgainenc->count < rxgain_last_count) {
                   // increase mic gain
                   rs->mic_gain++;
+                  if (rs->mic_gain > 100) {
+                      rs->mic_gain = 100;
+                  }
               } else if (rxgainenc->count > rxgain_last_count) {
                   // decrease mic gain
                   rs->mic_gain--;
+                  if (rs->mic_gain < 0) {
+                      rs->mic_gain = 0;
+                  }
               }
               // send the command
               printf("ZZMG%03d;", rs->mic_gain);
