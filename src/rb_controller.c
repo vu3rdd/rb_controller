@@ -217,14 +217,13 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
               }
               printf("ZZCS%02d;", rs->cw_speed);
           } else if (mode == LSB || mode == USB) {
+              rs->mic_gain = getMicGain();
               if (rxgainenc->count < rxgain_last_count) {
                   // increase mic gain
                   rs->mic_gain++;
-                  rs->mic_gain = (rs->mic_gain > 70 ? 70 : rs->mic_gain);
               } else if (rxgainenc->count > rxgain_last_count) {
                   // decrease mic gain
                   rs->mic_gain--;
-                  rs->mic_gain = (rs->mic_gain < 0 ? 0 : rs->mic_gain);
               }
               // send the command
               printf("ZZMG%03d;", rs->mic_gain);
@@ -270,10 +269,8 @@ void audio_gain_enc_handler(radio_state *rs, encoder *audio_gain_enc) {
       // get audio gain
       rs->audio_gain = getAudioGain();
       if (audio_gain_enc->count < audio_gain_last_count) {
-          if (rs->audio_gain < 100)
               rs->audio_gain++;
       } else if (audio_gain_enc->count > audio_gain_last_count) {
-          if (rs->audio_gain > 0)
               rs->audio_gain--;
       }
       printf("ZZAG%03d;", rs->audio_gain);
