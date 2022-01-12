@@ -216,7 +216,7 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
                   rs->cw_speed = (rs->cw_speed < 0 ? 0 : rs->cw_speed);
               }
               printf("ZZCS%02d;", rs->cw_speed);
-          } else if (mode == LSB || mode == USB) {
+          } else if (mode == LSB || mode == USB || mode == AM || mode == DSB) {
               rs->mic_gain = getMicGain();
               if (rxgainenc->count < rxgain_last_count) {
                   // increase mic gain
