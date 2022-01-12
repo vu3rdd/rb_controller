@@ -260,8 +260,9 @@ radio_state *radio_init(void){
     s->zzmd_index = 0;
     s->rx_gain = 0;
     s->tx_gain = 50;
-    s->audio_gain = 25;
+    s->audio_gain = 30;
     s->cw_speed = 20; // default CW speed is 20 WPM
+    s->mic_gain = 10;
     s->nb_val = 0;
     s->snb_val = 0;
     s->anf_val = 0;
