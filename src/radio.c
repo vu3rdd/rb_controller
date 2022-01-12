@@ -75,6 +75,27 @@ int getAudioGain(void) {
     return ag;
 }
 
+int getMicGain(void) {
+    printf("ZZMG;");
+    char micgain_buf[9];
+
+    memset(micgain_buf, '\0', 9);
+    for (int i = 0; i < 9; i++) {
+        micgain_buf[i] = getchar();
+        if (micgain_buf[i] == ';') {
+            micgain_buf[i] = '\0';
+            break;
+        }
+    }
+
+    int mic_gain = strtol(&micgain_buf[4], NULL, 10);
+    if (errno != 0) {
+        return -1;
+    }
+
+    return mic_gain;
+}
+
 mode getMode(void) {
     printf("ZZMD;"); // try to read the current mode
     char mode[20];

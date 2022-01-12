@@ -69,5 +69,6 @@ int getNR2(void);
 int getSNB(void);
 int getANF(void);
 int getAGCMode(void);
+int getMicGain(void);
 
 #endif
