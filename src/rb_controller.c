@@ -86,8 +86,9 @@ unsigned int keypad_4X4[4][4] = {
 
 bool MHZ_enable = false;
 uint8_t MCP23017_GPIOA_val = 0;
-char zzmd_val[3][3] = {"00\0", "01\0", "06\0"};
-char zzmd1_val[3][3] = {"03\0", "04\0", "07\0"};
+
+char zzmd_val[3][3]  = { "00", "01", "06" };
+char zzmd1_val[3][3] = { "03", "04", "07" };
 
 // I2C reserves some addresses for special purposes. We exclude these from the
 // scan. These are any addresses of the form 000 0xxx or 111 1xxx
