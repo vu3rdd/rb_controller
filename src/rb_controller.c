@@ -40,11 +40,15 @@ void waitforradio();
 volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
-// unsigned int Keyval = 0;
-unsigned int keypad_4X4[4][4] = {
-    {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}};
 
-// buttons mapping
+unsigned int keypad_4X4[4][4] = {
+    { 1,   2,  3,  4  },
+    { 5,   6,  7,  8  },
+    { 9,  10, 11,  12 },
+    { 13, 14, 15,  16 }
+};
+
+// buttons mapping (name to an integer defined in keypad_4x4
 
 // top left
 #define BTN_ON_OFF      13
@@ -74,10 +78,10 @@ unsigned int keypad_4X4[4][4] = {
 #define BTN_FSTEP      191
 #define BTN_RXANT      223
 
-#define PTT_OUT_RELAY 1
-#define POWER_ON_RELAY 2
-#define BIAS_OUT 32
-#define TR_RELAY_OUT 64
+#define PTT_OUT_RELAY        1
+#define POWER_ON_RELAY       2
+#define BIAS_OUT            32
+#define TR_RELAY_OUT        64
 #define AM_AMP_MUTE_ON_PTT 128
 
 bool MHZ_enable = false;
