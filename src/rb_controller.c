@@ -30,7 +30,7 @@ int cols[] = { KPC0, KPC1, KPC2, KPC3 };
 encoder *encoders[5];
 
 #define PTT_IN 20
-#define PWM 22
+#define PWM    22
 
 unsigned long time = 0;
 const int delayTime = 50; // Delay for every push button may vary
@@ -717,34 +717,38 @@ void i2c_expander_handler(radio_state *rs) {
     }
 }
 
-void ptt_handler() {
-  static int old_ptt = -1;
-  int ptt = gpio_get(PTT_IN);
-  if (old_ptt != ptt) {
-    old_ptt = ptt;
-    if (ptt == 0) // PTT Pressed
-    {
-      MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
-      MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
-      MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
-      writemcp23017();
-      sleep_ms(20);
-      MCP23017_GPIOA_val &= ~BIAS_OUT;
-      writemcp23017();
-      printf("TX;");
+void ptt_handler(void) {
+    static int old_ptt = -1;
+    int ptt = gpio_get(PTT_IN);
 
-    } else // PTT released
-    {
-      printf("RX;");
-      MCP23017_GPIOA_val |= BIAS_OUT;
-      writemcp23017();
-      sleep_ms(20);
-      MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
-      MCP23017_GPIOA_val |= PTT_OUT_RELAY;
-      MCP23017_GPIOA_val |= TR_RELAY_OUT;
-      writemcp23017();
+    if (old_ptt != ptt) {
+        old_ptt = ptt;
+        if (ptt == 0) { // PTT Pressed
+            MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
+            MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
+            MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
+
+            writemcp23017();
+            sleep_ms(20);
+
+            MCP23017_GPIOA_val &= ~BIAS_OUT;
+
+            writemcp23017();
+            printf("TX;");
+        } else { // PTT released
+            printf("RX;");
+            MCP23017_GPIOA_val |= BIAS_OUT;
+
+            writemcp23017();
+            sleep_ms(20);
+
+            MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
+            MCP23017_GPIOA_val |= PTT_OUT_RELAY;
+            MCP23017_GPIOA_val |= TR_RELAY_OUT;
+
+            writemcp23017();
+        }
     }
-  }
 }
 
 // timer tick
@@ -755,7 +759,7 @@ void ptt_handler() {
 /*     return true; */
 /* } */
 
-int main() {
+int main(void) {
     stdio_init_all();
     stdio_usb_init();
     sleep_ms(2000);
