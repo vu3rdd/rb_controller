@@ -29,9 +29,6 @@ int cols[] = { KPC0, KPC1, KPC2, KPC3 };
 
 encoder *encoders[5];
 
-#define PTT_IN 20
-#define PWM    22
-
 unsigned long time = 0;
 const int delayTime = 50; // Delay for every push button may vary
 

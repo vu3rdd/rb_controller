@@ -29,7 +29,6 @@
 #define VFO_ENC_A 11
 #define VFO_ENC_B 10
 
-
 #define FILTER_ENC_A 14
 #define FILTER_ENC_B 15
 
@@ -43,6 +42,9 @@
 #define KPC2 4
 #define KPC3 6
 #define KPCX 99 // undefined column number!
+
+#define PTT_IN 20
+#define PWM    22
 
 #ifdef NEW_BUTTON_MAPPING
 
