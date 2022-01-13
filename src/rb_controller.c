@@ -250,6 +250,14 @@ void writemcp23017() {
     write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
 }
 
+/* // timer tick */
+bool timer_ticked = false;
+bool repeating_timer_callback(struct repeating_timer *t) {
+    timer_ticked = true;
+
+    return true;
+}
+
 void vfo_enc_handler(radio_state *rs, encoder *vfo_enc) {
   static unsigned int vfo_last_count;
 
@@ -753,14 +761,6 @@ void ptt_handler(void) {
     }
 }
 
-// timer tick
-/* int globalF = 10000000; //10MHz */
-/* bool repeating_timer_callback(struct repeating_timer *t) { */
-/*     globalF = getVFO('A'); */
-
-/*     return true; */
-/* } */
-
 int main(void) {
     stdio_init_all();
     stdio_usb_init();
@@ -902,12 +902,13 @@ int main(void) {
     gpio_put(LED_PIN, 0);
     radio_state *rs = radio_init();
 
-    /* struct repeating_timer timer; */
-    /* add_repeating_timer_ms(-(1000), repeating_timer_callback, NULL, &timer); */
+    struct repeating_timer timer;
+    add_repeating_timer_ms(-(500), repeating_timer_callback, NULL, &timer);
 
     int f = getVFO('A');
     switchLPF(rs, f);
 
+    uint64_t t1 = time_us_64();
     while (1) {
         rit_enc_handler(rs, rit_enc);
         rxgain_enc_handler(rs, rxgain_enc);
@@ -921,6 +922,13 @@ int main(void) {
             keypad_Handler(rs);
 
         ptt_handler();
+
+        if (timer_ticked) {
+            timer_ticked = false;
+
+            int f = getVFO('A');
+            switchLPF(rs, f);
+        }
     }
 
     return 0;
