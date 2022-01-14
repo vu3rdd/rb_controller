@@ -53,6 +53,27 @@ int getRXAttenuation(void) {
     return attn/100;
 }
 
+int getTXDrive(void) {
+    printf("PC;");
+    char drive_buffer[7]; // PCXXX;
+
+    memset(drive_buffer, '\0', 7);
+    for (int i = 0; i < 7; i++) {
+        drive_buffer[i] = getchar();
+        if (drive_buffer[i] == ';') {
+            drive_buffer[i] = '\0';
+            break;
+        }
+    }
+
+    int drive = strtol(&drive_buffer[2], NULL, 10);
+    if (errno != 0) {
+        return -1;
+    }
+
+    return drive;
+}
+
 int getStepIndex(void) {
     printf("ZZAC;");
     char step_buffer[8];

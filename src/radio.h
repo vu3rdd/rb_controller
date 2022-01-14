@@ -71,5 +71,6 @@ int getANF(void);
 int getAGCMode(void);
 int getMicGain(void);
 int getRXAttenuation(void);
+int getTXDrive(void);
 
 #endif
