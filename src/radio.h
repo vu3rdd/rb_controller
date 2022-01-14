@@ -70,5 +70,6 @@ int getSNB(void);
 int getANF(void);
 int getAGCMode(void);
 int getMicGain(void);
+int getRXAttenuation(void);
 
 #endif

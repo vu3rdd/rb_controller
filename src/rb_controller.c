@@ -173,21 +173,27 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
   static unsigned int rxgain_last_count;
 
   switch (rs->drive_enable) {
-  case 0:
-      // rx gain
+  case 0: {
+      // rx gain (rather attenuation) range is (-12, +48).
+      // this is mapped to a number (integer) between 0 and 99 internally
+      // that number is what is returned by the command when asked
+      // for the attenuation.
       if (rxgainenc->count != rxgain_last_count) {
+          int current_gain = getRXAttenuation();
+          rs->rx_gain = current_gain;
+
           // Take action here
-          if (rxgainenc->count > rxgain_last_count) {
-              rs->rx_gain++;
-              if (rs->rx_gain == 48)
-                  rs->rx_gain = 48;
-          } else if (rxgainenc->count < rxgain_last_count) {
-              if (rs->rx_gain > -12)
+          if (rxgainenc->count < rxgain_last_count) {
+              if (rs->rx_gain < 60)
+                  rs->rx_gain++;
+          } else if (rxgainenc->count > rxgain_last_count) {
+              if (rs->rx_gain > 0)
                   rs->rx_gain--;
           }
           printf("RA%02d;", rs->rx_gain);
       }
       break;
+  }
   case 1:
       // tx gain
       if (rxgainenc->count != rxgain_last_count) {

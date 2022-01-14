@@ -30,8 +30,28 @@ int getVFO(char AorB) {
     return (int)strtol(&resp[4], NULL, 10);
 }
 
-/* void setVFO(char AorB, int freq) { */
-/* } */
+int getRXAttenuation(void) {
+    printf("RA;");
+    char attn_buffer[8];
+
+    memset(attn_buffer, '\0', 8);
+    for (int i = 0; i < 8; i++) {
+        attn_buffer[i] = getchar();
+        if (attn_buffer[i] == ';') {
+            attn_buffer[i] = '\0';
+            break;
+        }
+    }
+
+    int attn = strtol(&attn_buffer[2], NULL, 10);
+    if (errno != 0) {
+        return -1;
+    }
+
+    // gain is in the form "XX00", so get rid of the last two digits
+    // by dividing the number by 100.
+    return attn/100;
+}
 
 int getStepIndex(void) {
     printf("ZZAC;");
