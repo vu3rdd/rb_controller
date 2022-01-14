@@ -70,26 +70,13 @@ unsigned int keypad_4X4[4][4] = {
 #define BTN_SPLIT        8
 #define BTN_NB          11
 #define BTN_NR          12
+#define BTN_AGC         14
 #define BTN_CTUNE       15
 #define BTN_FLOCK       16
-
-#ifdef NEW_BUTTON_MAPPING
-
-#define BTN_AGC         14
 
 // bottom right (fed via MCP23008)
 #define BTN_FSTEP      191
 #define BTN_RXANT      223
-
-#else
-
-#define BTN_FSTEP       14
-
-// bottom right (fed via MCP23008)
-#define BTN_RXANT      191 // bottom right (left switch)
-#define BTN_AGC        223 // bottom right (right switch)
-
-#endif
 
 #define PTT_OUT_RELAY        1
 #define POWER_ON_RELAY       2

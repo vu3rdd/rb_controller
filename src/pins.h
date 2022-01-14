@@ -46,9 +46,6 @@
 #define PTT_IN 20
 #define PWM    22
 
-#define BR_LEFT  191
-#define BR_RIGHT 223
-
 #ifdef NEW_BUTTON_MAPPING
 
 // MCP23017 INPUT
