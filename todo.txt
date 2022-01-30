@@ -1,0 +1,15 @@
+Controller
+
+- RIT and other encoder CW rotation initially goes down one step
+  before advancing up.
+- LSB/USB switching around 10MHz.
+- long press of LSB/USB to toggle it.
+- velocity on VFO optical Encoder to increase step size dynamically.
+
+PiHPSDR
+
+- Fonts/typeface sizes are too small
+- A lot of wasted area at the top
+- ctune should move the panadaptor.
+- Filter appearance on panadaptor leaves out ~100-150Hz.
+
