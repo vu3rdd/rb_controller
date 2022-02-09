@@ -756,7 +756,7 @@ void ptt_handler(void) {
         } else { // PTT released
             // wait a bit before releasing ptt and putting radio into
             // rx mode
-            sleep_ms(500);
+            sleep_ms(300);
 
             printf("RX;");
             MCP23017_GPIOA_val |= BIAS_OUT;
