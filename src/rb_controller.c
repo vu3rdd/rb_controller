@@ -269,6 +269,11 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 void vfo_enc_handler(radio_state *rs, encoder *vfo_enc) {
   static unsigned int vfo_last_count;
 
+  // note: this is a high pulse-per-rotation encoder. It emits 4 steps
+  // for each full-pulse period. Also, since the pulse rate is high,
+  // it may be better to divide this rate to something smaller to make
+  // the turning a lot smoother.
+
   if (vfo_enc->count != vfo_last_count) {
     // Take action here
     if (vfo_enc->count < vfo_last_count) {
