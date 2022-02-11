@@ -942,6 +942,10 @@ int main(void) {
         if (timer_ticked) {
             timer_ticked = false;
 
+            // XXX: record VFO encoder counter to measure the pulses
+            // turned per unit time. This can be a measure of the
+            // velocity of the rotation. Depending on the velocy, the
+            // step size can be changed dynamically.
             int f = getVFO('A');
             switchLPF(rs, f);
         }
