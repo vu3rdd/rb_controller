@@ -925,7 +925,6 @@ int main(void) {
     int f = getVFO('A');
     switchLPF(rs, f);
 
-    uint64_t t1 = time_us_64();
     while (1) {
         rit_enc_handler(rs, rit_enc);
         rxgain_enc_handler(rs, rxgain_enc);
