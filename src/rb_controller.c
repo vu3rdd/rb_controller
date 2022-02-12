@@ -948,15 +948,15 @@ int main(void) {
             // velocity of the rotation. Depending on the velocy, the
             // step size can be changed dynamically.
             int vfo_accel = 2 * abs(vfo_enc->count - last_vfo_count); // dividing by 0.5, same as x2
-            int step_size_index = 0;
-            if (vfo_accel >= 0 && vfo_accel < 100) {
+            static int step_size_index;
+            if (vfo_accel >= 0 && vfo_accel < 50) {
+                step_size_index = 0;
+            } else if (vfo_accel >= 50 && vfo_accel < 400) {
                 step_size_index = 1;
-            } else if (vfo_accel >= 100 && vfo_accel < 400) {
-                step_size_index = 2;
-            } else if (vfo_accel >= 400 && vfo_accel < 800) {
-                step_size_index = 3;
+            /* } else if (vfo_accel >= 400 && vfo_accel < 800) { */
+            /*     step_size_index = 2; */
             } else if (vfo_accel >= 800) {
-                step_size_index = 4;
+                step_size_index = 2;
             }
             setStepSize(step_size_index);
             last_vfo_count = vfo_enc->count;
