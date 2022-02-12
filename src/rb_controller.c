@@ -963,16 +963,6 @@ int main(void) {
 
             int f = getVFO('A');
             switchLPF(rs, f);
-
-            // switch between LSB and USB at the 10MHz boundary
-            int mode = getMode();
-            if (f >= 10000000 && mode == LSB) {
-                // set mode to USB
-                printf("ZZMD01;");
-            } else if (f < 10000000 && mode == USB) {
-                // set mode to LSB
-                printf("ZZMD0;");
-            }
         }
     }
 
