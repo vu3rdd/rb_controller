@@ -926,6 +926,7 @@ int main(void) {
     switchLPF(rs, f);
 
     static unsigned int last_vfo_count;
+    int last_f = f;
     while (1) {
         rit_enc_handler(rs, rit_enc);
         rxgain_enc_handler(rs, rxgain_enc);
@@ -966,13 +967,15 @@ int main(void) {
 
             // switch between LSB and USB at the 10MHz boundary
             int mode = getMode();
-            if (f >= 10000000 && mode == LSB) {
+            if (last_f < 10000000 && f >= 10000000 && mode == LSB) {
                 // set mode to USB
                 printf("ZZMD01;");
-            } else if (f < 10000000 && mode == USB) {
+            } else if (last_f >= 10000000 && f < 10000000 && mode == USB) {
                 // set mode to LSB
                 printf("ZZMD0;");
             }
+
+            last_f = f;
         }
     }
 
