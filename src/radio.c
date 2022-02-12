@@ -95,6 +95,23 @@ int getStepIndex(void) {
     return step_index;
 }
 
+void setStepSize(unsigned int index) {
+    // valid step indices
+    // 0 - 1hz
+    // 1 - 10hz
+    // 2 - 100hz
+    // 3 - 1k
+    // 4 - 10k
+    // 5 - 100k
+    // 6 - 1M
+    if (index >= 7) {
+        // invalid index, do nothing
+        return;
+    } else {
+        printf("ZZAC%02d;", index);
+    }
+}
+
 int getAudioGain(void) {
     printf("ZZAG;");
     char audiogain_buf[9];
