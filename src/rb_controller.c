@@ -950,13 +950,13 @@ int main(void) {
             // step size can be changed dynamically.
             int vfo_accel = 2 * abs(vfo_enc->count - last_vfo_count); // dividing by 0.5, same as x2
             static int step_size_index;
-            if (vfo_accel >= 0 && vfo_accel < 50) {
+            if (vfo_accel >= 0 && vfo_accel < 100) {
                 step_size_index = 0;
-            } else if (vfo_accel >= 50 && vfo_accel < 400) {
+            } else if (vfo_accel >= 100 && vfo_accel < 300) {
                 step_size_index = 1;
             /* } else if (vfo_accel >= 400 && vfo_accel < 800) { */
             /*     step_size_index = 2; */
-            } else if (vfo_accel >= 800) {
+            } else if (vfo_accel >= 300) {
                 step_size_index = 2;
             }
             setStepSize(step_size_index);
@@ -972,7 +972,7 @@ int main(void) {
                 printf("ZZMD01;");
             } else if (last_f >= 10000000 && f < 10000000 && mode == USB) {
                 // set mode to LSB
-                printf("ZZMD0;");
+                printf("ZZMD00;");
             }
 
             last_f = f;
