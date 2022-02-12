@@ -954,10 +954,10 @@ int main(void) {
                 step_size_index = 0;
             } else if (vfo_accel >= 100 && vfo_accel < 300) {
                 step_size_index = 1;
-            /* } else if (vfo_accel >= 400 && vfo_accel < 800) { */
-            /*     step_size_index = 2; */
-            } else if (vfo_accel >= 300) {
+            } else if (vfo_accel >= 300 && vfo_accel < 1300) {
                 step_size_index = 2;
+            }  else if (vfo_accel >= 1300) {
+                step_size_index = 3;
             }
             setStepSize(step_size_index);
             last_vfo_count = vfo_enc->count;
