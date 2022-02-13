@@ -950,13 +950,14 @@ int main(void) {
             // step size can be changed dynamically.
             int vfo_accel = 2 * abs(vfo_enc->count - last_vfo_count); // dividing by 0.5, same as x2
             static int step_size_index;
-            if (vfo_accel >= 0 && vfo_accel < 100) {
+            vfo_accel = vfo_accel/4; // in effect this converts 400ppr to 100ppr
+            if (vfo_accel >= 5 && vfo_accel < 25) {
                 step_size_index = 0;
-            } else if (vfo_accel >= 100 && vfo_accel < 300) {
+            } else if (vfo_accel >= 25 && vfo_accel < 80) {
                 step_size_index = 1;
-            } else if (vfo_accel >= 300 && vfo_accel < 1300) {
+            } else if (vfo_accel >= 80 && vfo_accel < 200) {
                 step_size_index = 2;
-            }  else if (vfo_accel >= 1300) {
+            }  else if (vfo_accel >= 200) {
                 step_size_index = 3;
             }
             setStepSize(step_size_index);
