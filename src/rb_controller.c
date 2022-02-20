@@ -41,6 +41,8 @@ volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
 
+const int timer_tick_period_ms = 100; // 100ms
+
 unsigned int keypad_4X4[4][4] = {
     { 1,   2,  3,  4  },
     { 5,   6,  7,  8  },
@@ -920,7 +922,7 @@ int main(void) {
     radio_state *rs = radio_init();
 
     struct repeating_timer timer;
-    add_repeating_timer_ms(-(500), repeating_timer_callback, NULL, &timer);
+    add_repeating_timer_ms(-(timer_tick_period_ms), repeating_timer_callback, NULL, &timer);
 
     int f = getVFO('A');
     switchLPF(rs, f);
@@ -948,7 +950,7 @@ int main(void) {
             // turned per unit time. This can be a measure of the
             // velocity of the rotation. Depending on the velocy, the
             // step size can be changed dynamically.
-            int vfo_accel = 2 * abs(vfo_enc->count - last_vfo_count); // dividing by 0.5, same as x2
+            int vfo_accel = (1000.0/timer_tick_period_ms) * abs(vfo_enc->count - last_vfo_count);
             static int step_size_index;
             vfo_accel = vfo_accel/4; // in effect this converts 400ppr to 100ppr
             if (vfo_accel >= 5 && vfo_accel < 25) {
