@@ -671,24 +671,24 @@ void i2c_expander_handler(radio_state *rs) {
     interrupt_on_mcp0 = false;
     // int pin = get_last_interrupt_pin();
     // int int_values = get_interrupt_values();
-    int input_values_1; // = update_input_values();
-    input_values_1 = read_register(MCP23017_GPIOB);
+    int gpb_input; // = update_input_values();
+    gpb_input = read_register(MCP23017_GPIOB);
     bool long_press = false;
 
-    if (input_values_1 != oldpin) {
-        oldpin = input_values_1;
+    if (gpb_input != oldpin) {
+        oldpin = gpb_input;
 
         sleep_ms(250);
         // read again to see if we get the same values
         int input_values_2 = read_register(MCP23017_GPIOB);
 
-        if (input_values_2 == input_values_1) {
+        if (input_values_2 == gpb_input) {
             // long press
             long_press = true;
         }
 
-        // printf("InputOK:%d\n", input_values_1);
-        switch (input_values_1) {
+        // printf("InputOK:%d\n", gpb_input);
+        switch (gpb_input) {
         case ENC_RIT_SW: {
             if (long_press) {
                 printf("ZZRC;");
