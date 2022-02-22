@@ -63,4 +63,7 @@
 #define ENC_ZOOM_SW       127 // 0x7F - 0111 1111  (GPB7)
 #define ENC_RX_RFGAIN_SW  253 // 0xFD - 1111 1101  (GPB1)
 
+#define CW_IAMBIC_DOT     247 // 0xF7 - 1111 0111  (GPB3)
+#define CW_IAMBIC_DASH    239 // 0xEF - 1110 1111  (GPB4)
+
 #endif
