@@ -640,7 +640,6 @@ void Keypad4X4_callback_Handler(uint gpio) {
 }
 
 void gpio_callback(uint gpio, uint32_t events) {
-
     int_status = save_and_disable_interrupts();
     if ((to_ms_since_boot(get_absolute_time())-time)>delayTime) {
         time = to_ms_since_boot(get_absolute_time());
@@ -650,7 +649,6 @@ void gpio_callback(uint gpio, uint32_t events) {
             (gpio == KPC3)) {
             Keypad4X4_callback_Handler(gpio);
         }
-        // printf("gpio_callback gpio = %d\n",gpio);
     }
 
     if ((gpio == AUDIO_GAIN_ENC_A) || (gpio == AUDIO_GAIN_ENC_B)) {
@@ -668,7 +666,7 @@ void gpio_callback(uint gpio, uint32_t events) {
 }
 
 void i2c_expander_handler(radio_state *rs) {
-    static int oldpin = -1;
+    static int old_gpb_input = -1;
     interrupt_on_mcp0 = false;
     // int pin = get_last_interrupt_pin();
     // int int_values = get_interrupt_values();
@@ -676,8 +674,8 @@ void i2c_expander_handler(radio_state *rs) {
     gpb_input = read_register(MCP23017_GPIOB);
     bool long_press = false;
 
-    if (gpb_input != oldpin) {
-        oldpin = gpb_input;
+    if (gpb_input != old_gpb_input) {
+        old_gpb_input = gpb_input;
 
         sleep_ms(250);
         // read again to see if we get the same values
