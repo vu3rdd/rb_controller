@@ -16,6 +16,7 @@
 #include "radio.h"
 #include "encoder.h"
 #include "pins.h"
+#include "config.h"
 
 #ifndef PICO_DEFAULT_LED_PIN
 #warning blink example requires a board with a regular LED
@@ -950,6 +951,7 @@ int main(void) {
             // turned per unit time. This can be a measure of the
             // velocity of the rotation. Depending on the velocy, the
             // step size can be changed dynamically.
+#ifdef VFO_ADAPTIVE
             int vfo_accel = (1000.0/timer_tick_period_ms) * abs(vfo_enc->count - last_vfo_count);
             static int step_size_index;
             vfo_accel = vfo_accel/4; // in effect this converts 400ppr to 100ppr
@@ -963,6 +965,7 @@ int main(void) {
                 step_size_index = 3;
             }
             setStepSize(step_size_index);
+#endif // VFO_ADAPTIVE
             last_vfo_count = vfo_enc->count;
 
             int f = getVFO('A');

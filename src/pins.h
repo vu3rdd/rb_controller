@@ -1,7 +1,7 @@
 #ifndef PINS_INCLUDE
 #define PINS_INCLUDE
 
-#define NEW_BUTTON_MAPPING
+#include "config.h"
 
 #ifdef NEW_BUTTON_MAPPING
 
