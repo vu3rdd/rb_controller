@@ -5,7 +5,7 @@
 
 // default is to have new button mapping. For VU2XTO's rig, it is
 // slightly different mapping
-// #define NEW_BUTTON_MAPPING
+#define NEW_BUTTON_MAPPING
 
 // uncomment the next line if VFO step needs to be decided based on
 // the VFO knob turning acceleration.
