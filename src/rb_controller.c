@@ -743,11 +743,31 @@ void i2c_expander_handler(radio_state *rs) {
 
 void ptt_handler(void) {
     static int old_ptt = -1;
+    static int old_ptt_from_fpga = -1;
+
     int ptt = gpio_get(PTT_IN);
 
+    // if ptt is on, then put pihpsdr into tx.
+    // however, to drive the relay, always use ptt_from_fpga
     if (old_ptt != ptt) {
         old_ptt = ptt;
         if (ptt == 0) { // PTT Pressed
+            printf("TX;");
+        } else { // PTT released
+            // wait a bit before releasing ptt and putting radio into
+            // rx mode
+            sleep_ms(300);
+
+            printf("RX;");
+        }
+    }
+
+    sleep_ms(10);
+    int ptt_from_fpga = gpio_get(PTT_OUT_FROM_FPGA);
+    if (old_ptt_from_fpga != ptt_from_fpga) {
+        old_ptt_from_fpga = ptt_from_fpga;
+        if (ptt_from_fpga == 0) { // fpga in tx (either because vox is
+                                  // on or ptt pressed)
             MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
             MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
             MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
@@ -758,13 +778,7 @@ void ptt_handler(void) {
             MCP23017_GPIOA_val &= ~BIAS_OUT;
 
             writemcp23017();
-            printf("TX;");
-        } else { // PTT released
-            // wait a bit before releasing ptt and putting radio into
-            // rx mode
-            sleep_ms(300);
-
-            printf("RX;");
+        } else { // fpga release ptt out
             MCP23017_GPIOA_val |= BIAS_OUT;
 
             writemcp23017();
@@ -901,7 +915,11 @@ int main(void) {
 
     gpio_init(PTT_IN);
     gpio_set_dir(PTT_IN, GPIO_IN);
+    gpio_init(PTT_OUT_FROM_FPGA);
+    gpio_set_dir(PTT_OUT_FROM_FPGA, GPIO_IN);
+
     ptt_handler();
+
 
     MCP23017_GPIOA_val |= POWER_ON_RELAY;
     writemcp23017();

@@ -46,6 +46,9 @@
 #define PTT_IN 20
 #define PWM    22
 
+// use GPIO27 (physical pin 32) for reading ptt out from FPGA
+#define PTT_OUT_FROM_FPGA  27 // input into pico
+
 #ifdef NEW_BUTTON_MAPPING
 
 // MCP23017 INPUT
