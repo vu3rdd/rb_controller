@@ -987,8 +987,8 @@ int main(void) {
                 step_size_index = 3;
             }
             setStepSize(step_size_index);
-#endif // VFO_ADAPTIVE
             last_vfo_count = vfo_enc->count;
+#endif // VFO_ADAPTIVE
 
             int f = getVFO('A');
             switchLPF(rs, f);
