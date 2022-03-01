@@ -11,4 +11,7 @@
 // the VFO knob turning acceleration.
 // #define VFO_ADAPTIVE
 
+// limit step size increments to 1 and 100
+#define LIMIT_STEP_INCREMENTS
+
 #endif

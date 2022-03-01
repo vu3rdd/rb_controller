@@ -90,6 +90,12 @@ unsigned int keypad_4X4[4][4] = {
 bool MHZ_enable = false;
 uint8_t MCP23017_GPIOA_val = 0;
 
+#ifdef LIMIT_STEP_INCREMENTS
+uint8_t step_incr_max = 3;
+#else
+uint8_t step_incr_max = 7;
+#endif
+
 char zzmd_val[3][3]  = { "00", "01", "06" };
 char zzmd1_val[3][3] = { "03", "04", "07" };
 
@@ -725,7 +731,7 @@ void i2c_expander_handler(radio_state *rs) {
         case BTN_FSTEP: {
             rs->zzac_index = getStepIndex();
             // cycle through 1, 10, 100, 1k, 10k, 100k, 1M hz
-            rs->zzac_index = (rs->zzac_index + 1) % 7;
+            rs->zzac_index = (rs->zzac_index + 1) % step_incr_max;
             printf("ZZAC%02d;", rs->zzac_index);
             break;
         }
