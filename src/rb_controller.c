@@ -42,7 +42,7 @@ volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
 unsigned int col;
 volatile uint kp_gpio = KPCX;
 
-const int timer_tick_period_ms = 100; // 100ms
+const int timer_tick_period_ms = 500; // 500ms
 
 unsigned int keypad_4X4[4][4] = {
     { 1,   2,  3,  4  },
