@@ -799,6 +799,48 @@ void ptt_handler(void) {
     }
 }
 
+void ptt_handler_old(void) {
+    static int old_ptt = -1;
+    static int old_ptt_from_fpga = -1;
+
+    int ptt = gpio_get(PTT_IN);
+
+    // if ptt is on, then put pihpsdr into tx.
+    // however, to drive the relay, always use ptt_from_fpga
+    if (old_ptt != ptt) {
+        old_ptt = ptt;
+        if (ptt == 0) { // PTT Pressed
+            MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
+            MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
+            MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
+
+            writemcp23017();
+            sleep_ms(20);
+
+            MCP23017_GPIOA_val &= ~BIAS_OUT;
+
+            writemcp23017();
+            printf("TX;");
+        } else { // PTT released
+            // wait a bit before releasing ptt and putting radio into
+            // rx mode
+            sleep_ms(300);
+
+            printf("RX;");
+            MCP23017_GPIOA_val |= BIAS_OUT;
+
+            writemcp23017();
+            sleep_ms(20);
+
+            MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
+            MCP23017_GPIOA_val |= PTT_OUT_RELAY;
+            MCP23017_GPIOA_val |= TR_RELAY_OUT;
+
+            writemcp23017();
+        }
+    }
+}
+
 int main(void) {
     stdio_init_all();
     stdio_usb_init();
@@ -921,11 +963,15 @@ int main(void) {
 
     gpio_init(PTT_IN);
     gpio_set_dir(PTT_IN, GPIO_IN);
+
+#ifdef PTT_FROM_FPGA_INTO_ADC
     gpio_init(PTT_OUT_FROM_FPGA);
     gpio_set_dir(PTT_OUT_FROM_FPGA, GPIO_IN);
 
     ptt_handler();
-
+#else
+    ptt_handler_old();
+#endif
 
     MCP23017_GPIOA_val |= POWER_ON_RELAY;
     writemcp23017();
