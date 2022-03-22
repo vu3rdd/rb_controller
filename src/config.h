@@ -5,10 +5,14 @@
 
 // default is to have new button mapping. For VU2XTO's rig, it is
 // slightly different mapping
-// #define NEW_BUTTON_MAPPING
+#define NEW_BUTTON_MAPPING
 
 // read PTT out from FPGA
 // #define PTT_FROM_FPGA_INTO_ADC
+
+// LPF xto or furuno (NEVER turn on BOTH)
+#define LPF_FURUNO
+// #define LPF_XTO
 
 // uncomment the next line if VFO step needs to be decided based on
 // the VFO knob turning acceleration.

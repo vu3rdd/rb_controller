@@ -5,6 +5,7 @@
 
 #include "mcp23017.h"
 #include "radio.h"
+#include "config.h"
 
 // get current vfo frequency (A or B)
 int getVFO(char AorB) {
@@ -305,24 +306,33 @@ int getAGCMode(void) {
 void switchLPF(radio_state *rs, int f) {
   static uint8_t oldlpf = 0;
 
-  if (f < 2000000) {
-      // < 2MHz
-      rs->lpf = 1 << 0;
-  } else if (f < 3000000) {
-      // < 3 MHz
-      rs->lpf = 1 << 1;
-  } else if (f < 5000000) {
-      // < 5 MHz
-      rs->lpf = 1 << 2;
-  } else if (f < 9000000) {
-      // < 9 MHz
-      rs->lpf = 1 << 3;
-  } else if (f < 16000000) {
-      // < 16 MHz
-      rs->lpf = 1 << 4;
-  } else if (f <= 30000000) {
-      // < 30 MHz
-      rs->lpf = 1 << 5;
+#ifdef LPF_FURUNO
+  int cutoffs[] = {
+      2600000,
+      3900000,
+      6400000,
+      10000000,
+      19000000,
+      30000000,
+  };
+#endif
+
+#ifdef LPF_XTO
+  int cutoffs[] = {
+      2000000,
+      3000000,
+      5000000,
+      9000000,
+      16000000,
+      30000000,
+  };
+#endif
+
+  for (size_t i = 0; i < 6; i++) {
+      if (f < cutoffs[i]) {
+          rs->lpf = 1 << i;
+          break;
+      }
   }
 
   if (rs->lpf != oldlpf) {
@@ -330,6 +340,7 @@ void switchLPF(radio_state *rs, int f) {
       oldlpf = rs->lpf;
   }
 }
+
 
 radio_state *radio_init(void){
     radio_state *s = (radio_state *)malloc(sizeof(radio_state));
