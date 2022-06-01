@@ -599,8 +599,8 @@ void keypad_Handler(radio_state *rs) {
                 rs->antsel = 64;
             else
                 rs->antsel = 0;
-            write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
-            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+            //write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
+            //write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
             break;
         case BTN_ON_OFF:
             if (rs->power) {
@@ -740,14 +740,14 @@ void i2c_expander_handler(radio_state *rs) {
                 rs->rxant = 128;
             else
                 rs->rxant = 0;
-            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+            //write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
             break;
         }
         }
     }
 }
 
-void ptt_handler(void) {
+void ptt_handler(radio_state *rs) {
     static int old_ptt = -1;
     static int old_ptt_from_fpga = -1;
 
@@ -799,7 +799,7 @@ void ptt_handler(void) {
     }
 }
 
-void ptt_handler_old(void) {
+void ptt_handler_old(radio_state *rs) {
     static int old_ptt = -1;
     static int old_ptt_from_fpga = -1;
 
@@ -811,10 +811,14 @@ void ptt_handler_old(void) {
         old_ptt = ptt;
         if (ptt == 0) { // PTT Pressed
             MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
-            MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
+            // MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
             MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
 
             writemcp23017(MCP23017_GPIOA_val);
+
+	    // put T/R to T (12v on the TD62783 which already has an internal pull up)
+	    write_register_mcp23008(9, rs->lpf | (1U << 7));
+
             sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~BIAS_OUT;
@@ -834,7 +838,9 @@ void ptt_handler_old(void) {
 
             MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
             MCP23017_GPIOA_val |= PTT_OUT_RELAY;
-            MCP23017_GPIOA_val |= TR_RELAY_OUT;
+            // MCP23017_GPIOA_val |= TR_RELAY_OUT;
+	    // put T/R into R
+	    write_register_mcp23008(9, rs->lpf);
 
             writemcp23017(MCP23017_GPIOA_val);
         }
@@ -961,6 +967,8 @@ int main(void) {
         gpio_put(rows[i], 1);
     }
 
+    radio_state *rs = radio_init();
+
     gpio_init(PTT_IN);
     gpio_set_dir(PTT_IN, GPIO_IN);
 
@@ -968,9 +976,9 @@ int main(void) {
     gpio_init(PTT_OUT_FROM_FPGA);
     gpio_set_dir(PTT_OUT_FROM_FPGA, GPIO_IN);
 
-    ptt_handler();
+    ptt_handler(rs);
 #else
-    ptt_handler_old();
+    ptt_handler_old(rs);
 #endif
 
     MCP23017_GPIOA_val |= POWER_ON_RELAY;
@@ -988,7 +996,6 @@ int main(void) {
         sleep_ms(500);
     }
     gpio_put(LED_PIN, 0);
-    radio_state *rs = radio_init();
 
     struct repeating_timer timer;
     add_repeating_timer_ms(-(timer_tick_period_ms), repeating_timer_callback, NULL, &timer);
@@ -1009,8 +1016,11 @@ int main(void) {
 
         if (kp_gpio != KPCX)
             keypad_Handler(rs);
-
-        ptt_handler();
+#ifdef PTT_FROM_FPGA_INTO_ADC
+        ptt_handler(rs);
+#else
+	ptt_handler_old(rs);
+#endif
 
         if (timer_ticked) {
             timer_ticked = false;

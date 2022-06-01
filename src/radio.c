@@ -302,10 +302,18 @@ int getAGCMode(void) {
     return strtol(&agc[4], NULL, 10);
 }
 
+void tr_on(radio_state *rs) {
+    // do not disturb any of the LPF state. Turn only the T/R line to 1.
+    write_register_mcp23008(9, rs->lpf | (1U << 7));
+}
+
+void tr_off(radio_state *rs) {
+    write_register_mcp23008(9, rs->lpf);
+}
+
 // switch LPF based on frequency
 void switchLPF(radio_state *rs, int f) {
   static uint8_t oldlpf = 0;
-
 #ifdef LPF_FURUNO
   int cutoffs[] = {
       2600000,
