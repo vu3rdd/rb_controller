@@ -14,8 +14,7 @@ int last_input;
 
 int write_register_mcp23008(uint8_t reg, uint8_t value) {
   uint8_t command[] = {reg, value};
-  int result =
-      i2c_write_blocking(i2c_default, I2C_ADDR_MCP23008, command, 2, false);
+  int result = i2c_write_blocking(i2c_default, I2C_ADDR_MCP23008, command, 2, false);
   if (result == PICO_ERROR_GENERIC) {
     return result;
   }
