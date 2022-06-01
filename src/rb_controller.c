@@ -263,8 +263,8 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
   rxgain_last_count = rxgainenc->count;
 }
 
-void writemcp23017() {
-    write_register(MCP23017_GPIOA, ~MCP23017_GPIOA_val);
+void writemcp23017(uint8_t val) {
+    write_register(MCP23017_GPIOA, ~val);
 }
 
 /* // timer tick */
@@ -607,12 +607,12 @@ void keypad_Handler(radio_state *rs) {
                 printf("#S;");
                 sleep_ms(10000);
                 MCP23017_GPIOA_val |= POWER_ON_RELAY;
-                writemcp23017();
+                writemcp23017(MCP23017_GPIOA_val);
                 sleep_ms(20);
                 rs->power = false;
             } else {
                 MCP23017_GPIOA_val &= ~POWER_ON_RELAY;
-                writemcp23017();
+                writemcp23017(MCP23017_GPIOA_val);
                 sleep_ms(20);
                 waitforradio();
                 rs->power = true;
@@ -778,23 +778,23 @@ void ptt_handler(void) {
             MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
             MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
             sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~BIAS_OUT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
         } else { // fpga release ptt out
             MCP23017_GPIOA_val |= BIAS_OUT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
             sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
             MCP23017_GPIOA_val |= PTT_OUT_RELAY;
             MCP23017_GPIOA_val |= TR_RELAY_OUT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
         }
     }
 }
@@ -814,12 +814,12 @@ void ptt_handler_old(void) {
             MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
             MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
             sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~BIAS_OUT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
             printf("TX;");
         } else { // PTT released
             // wait a bit before releasing ptt and putting radio into
@@ -829,14 +829,14 @@ void ptt_handler_old(void) {
             printf("RX;");
             MCP23017_GPIOA_val |= BIAS_OUT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
             sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
             MCP23017_GPIOA_val |= PTT_OUT_RELAY;
             MCP23017_GPIOA_val |= TR_RELAY_OUT;
 
-            writemcp23017();
+            writemcp23017(MCP23017_GPIOA_val);
         }
     }
 }
@@ -974,7 +974,7 @@ int main(void) {
 #endif
 
     MCP23017_GPIOA_val |= POWER_ON_RELAY;
-    writemcp23017();
+    writemcp23017(MCP23017_GPIOA_val);
 
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
