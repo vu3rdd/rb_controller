@@ -599,9 +599,11 @@ void keypad_Handler(radio_state *rs) {
                 rs->antsel = 64;
             else
                 rs->antsel = 0;
-            //write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
-            //write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
-            break;
+#ifndef LPF_FURUNO
+            write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
+            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+#endif
+	    break;
         case BTN_ON_OFF:
             if (rs->power) {
                 printf("#S;");
@@ -740,8 +742,10 @@ void i2c_expander_handler(radio_state *rs) {
                 rs->rxant = 128;
             else
                 rs->rxant = 0;
-            //write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
-            break;
+#ifndef LPF_FURUNO
+            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+#endif
+	    break;
         }
         }
     }
@@ -811,14 +815,17 @@ void ptt_handler_old(radio_state *rs) {
         old_ptt = ptt;
         if (ptt == 0) { // PTT Pressed
             MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
-            // MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
+#ifndef LPF_FURUNO
+            MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
+#endif
             MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
 
             writemcp23017(MCP23017_GPIOA_val);
 
+#ifdef LPF_FURUNO
 	    // put T/R to T (12v on the TD62783 which already has an internal pull up)
 	    write_register_mcp23008(9, rs->lpf | (1U << 7));
-
+#endif
             sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~BIAS_OUT;
@@ -838,9 +845,12 @@ void ptt_handler_old(radio_state *rs) {
 
             MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
             MCP23017_GPIOA_val |= PTT_OUT_RELAY;
-            // MCP23017_GPIOA_val |= TR_RELAY_OUT;
+#ifndef LPF_FURUNO
+            MCP23017_GPIOA_val |= TR_RELAY_OUT;
+#else
 	    // put T/R into R
 	    write_register_mcp23008(9, rs->lpf);
+#endif
 
             writemcp23017(MCP23017_GPIOA_val);
         }

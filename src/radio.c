@@ -344,7 +344,11 @@ void switchLPF(radio_state *rs, int f) {
   }
 
   if (rs->lpf != oldlpf) {
+#ifndef LPF_FURUNO
       write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+#else
+      write_register_mcp23008(9, rs->lpf);
+#endif
       oldlpf = rs->lpf;
   }
 }
