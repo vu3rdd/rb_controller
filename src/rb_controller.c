@@ -548,42 +548,12 @@ void keypad_Handler(radio_state *rs) {
             printf("VX%d;", rs->vox_val);
             break;
         case BTN_SPLIT: {
-            // first read the current mode. If the mode is CW, then VFOB=VFOA+1kc and SPLIT ON
-            // if mode is SSB (LSB/USB), then VFOB = vfoA + 5kc and SPLIT ON
-            int mode = getMode();
-
-            if (mode == CWL || mode == CWU) {
-                // check if mode is CW
-                // vfoB = vfoA + 1khz
-                // first read vfo A
-                int vfoA = getVFO('A');
-
-                // calculate the new vfo B value
-                int vfoB_int = vfoA + 1000;
-
-                // set vfo B value
-                char vfoB[17];
-                sprintf(vfoB, "ZZFB%011d;", vfoB_int);
-                printf("%s", vfoB);
-            } else if (mode == LSB || mode == USB) {
-                // we are in LSB or USB
-                // vfoB = vfoA + 5khz
-                // first read vfo A
-                int vfoA = getVFO('A');
-
-                // calculate the new vfo B value
-                int vfoB_int = vfoA + 5000;
-
-                // set vfo B value
-                char vfoB[17];
-                sprintf(vfoB, "ZZFB%011d;", vfoB_int);
-                printf("%s", vfoB);
-            }
-
+	    // toggle split value
             if (rs->split_val == 0)
                 rs->split_val = 1;
             else
                 rs->split_val = 0;
+
             printf("ZZSP%d;", rs->split_val);
             break;
         }
