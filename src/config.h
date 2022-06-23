@@ -10,9 +10,8 @@
 // read PTT out from FPGA
 #define PTT_FROM_FPGA_INTO_ADC
 
-// LPF xto or furuno (NEVER turn on BOTH)
+// LPF furuno (comment for XTO LPF)
 #define LPF_FURUNO
-// #define LPF_XTO
 
 // uncomment the next line if VFO step needs to be decided based on
 // the VFO knob turning acceleration.

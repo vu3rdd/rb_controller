@@ -323,9 +323,7 @@ void switchLPF(radio_state *rs, int f) {
       19000000,
       30000000,
   };
-#endif
-
-#ifdef LPF_XTO
+#else
   int cutoffs[] = {
       2000000,
       3000000,
