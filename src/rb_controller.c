@@ -742,7 +742,7 @@ void ptt_handler(radio_state *rs) {
         }
     }
 
-    sleep_ms(10);
+    // sleep_ms(10);
     int ptt_from_fpga = gpio_get(PTT_OUT_FROM_FPGA);
     if (old_ptt_from_fpga != ptt_from_fpga) {
         old_ptt_from_fpga = ptt_from_fpga;
