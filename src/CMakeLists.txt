@@ -3,10 +3,11 @@ add_executable(rb_controller
   mcp23017.c
   radio.c
   encoder.c
+  keyer.c
   )
 
 # pull in common dependencies
-target_link_libraries(rb_controller pico_stdlib hardware_i2c)
+target_link_libraries(rb_controller pico_stdlib hardware_i2c hardware_pwm hardware_gpio)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(rb_controller)
