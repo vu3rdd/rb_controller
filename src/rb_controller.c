@@ -749,10 +749,16 @@ void ptt_handler(radio_state *rs) {
         if (ptt_from_fpga == 0) { // fpga in tx (either because vox is
                                   // on or ptt pressed)
             MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
+#ifndef LPF_FURUNO
             MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
+#endif
             MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
 
             writemcp23017(MCP23017_GPIOA_val);
+#ifdef LPF_FURUNO
+	    // put T/R to Tx (12v on the TD62783 which already has an internal pull up)
+	    write_register_mcp23008(9, rs->lpf | (1U << 7));
+#endif
             sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~BIAS_OUT;
@@ -766,7 +772,12 @@ void ptt_handler(radio_state *rs) {
 
             MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
             MCP23017_GPIOA_val |= PTT_OUT_RELAY;
+#ifndef LPF_FURUNO
             MCP23017_GPIOA_val |= TR_RELAY_OUT;
+#else
+	    // put T/R into Rx
+	    write_register_mcp23008(9, rs->lpf);
+#endif
 
             writemcp23017(MCP23017_GPIOA_val);
         }
@@ -793,7 +804,7 @@ void ptt_handler_old(radio_state *rs) {
             writemcp23017(MCP23017_GPIOA_val);
 
 #ifdef LPF_FURUNO
-	    // put T/R to T (12v on the TD62783 which already has an internal pull up)
+	    // put T/R to Tx (12v on the TD62783 which already has an internal pull up)
 	    write_register_mcp23008(9, rs->lpf | (1U << 7));
 #endif
             sleep_ms(20);
@@ -818,7 +829,7 @@ void ptt_handler_old(radio_state *rs) {
 #ifndef LPF_FURUNO
             MCP23017_GPIOA_val |= TR_RELAY_OUT;
 #else
-	    // put T/R into R
+	    // put T/R into Rx
 	    write_register_mcp23008(9, rs->lpf);
 #endif
 
@@ -955,6 +966,7 @@ int main(void) {
 #ifdef PTT_FROM_FPGA_INTO_ADC
     gpio_init(PTT_OUT_FROM_FPGA);
     gpio_set_dir(PTT_OUT_FROM_FPGA, GPIO_IN);
+    gpio_pull_up(PTT_OUT_FROM_FPGA);
 
     ptt_handler(rs);
 #else

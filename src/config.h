@@ -8,7 +8,7 @@
 #define NEW_BUTTON_MAPPING
 
 // read PTT out from FPGA
-// #define PTT_FROM_FPGA_INTO_ADC
+#define PTT_FROM_FPGA_INTO_ADC
 
 // LPF xto or furuno (NEVER turn on BOTH)
 #define LPF_FURUNO
