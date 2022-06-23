@@ -1006,8 +1006,9 @@ int main(void) {
 
         i2c_expander_handler(rs);
 
-        if (kp_gpio != KPCX)
+        if (kp_gpio != KPCX) {
             keypad_Handler(rs);
+	}
 #ifdef PTT_FROM_FPGA_INTO_ADC
         ptt_handler(rs);
 #else
