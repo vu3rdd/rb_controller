@@ -193,11 +193,11 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
 
           // Take action here
           if (rxgainenc->count > rxgain_last_count) {
-              if (rs->rx_gain < 60)
-                  rs->rx_gain++;
-          } else if (rxgainenc->count < rxgain_last_count) {
               if (rs->rx_gain > 0)
                   rs->rx_gain--;
+          } else if (rxgainenc->count < rxgain_last_count) {
+              if (rs->rx_gain < 60)
+                  rs->rx_gain++;
           }
           printf("RA%02d;", rs->rx_gain);
       }
