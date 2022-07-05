@@ -966,7 +966,7 @@ int main(void) {
 #ifdef PTT_FROM_FPGA_INTO_ADC
     gpio_init(PTT_OUT_FROM_FPGA);
     gpio_set_dir(PTT_OUT_FROM_FPGA, GPIO_IN);
-    gpio_pull_up(PTT_OUT_FROM_FPGA);
+    // gpio_pull_up(PTT_OUT_FROM_FPGA);
 
     ptt_handler(rs);
 #else
