@@ -966,7 +966,9 @@ int main(void) {
 #ifdef PTT_FROM_FPGA_INTO_ADC
     gpio_init(PTT_OUT_FROM_FPGA);
     gpio_set_dir(PTT_OUT_FROM_FPGA, GPIO_IN);
-    // gpio_pull_up(PTT_OUT_FROM_FPGA);
+    // doesn't need internal pullup if we decide to wire up an external
+    // pullup. 36th pin on pico is 3.3v. So, a resistor wiredup between 36th
+    // pin and 32nd pin is good enough.
 
     ptt_handler(rs);
 #else
