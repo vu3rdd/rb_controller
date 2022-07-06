@@ -20,6 +20,12 @@ The config.h file has some definitions that can be changed at build-time.
 3. LPF active low vs active high/OC vs non-OC etc..
 4. TBD: Iambic keyer
 
+# Pending things to do (2022/Jul/06)
+
+1. Support for user configurable filters (var1/var2).
+2. Indication of muted audio.
+
+
 # Credits
 
 This code started from a version of the controller done by Dileep
