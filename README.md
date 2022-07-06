@@ -5,6 +5,18 @@ controller for RadioBerry/HL2 designed by Gopan VU2XTO.
 
 For the details of the board etc, please contact Gopan.
 
+# Building the code
+
+1. [Install pico-sdk](https://github.com/raspberrypi/pico-sdk).
+2. clone this repo (`git clone https://github.com/vu3rdd/rb_controller`)
+3. `mkdir build`
+4. `cd build`
+5. `cmake ..`
+6. `make`
+
+After a successful build, the `.uf2` file path would be
+`build/src/rb_controller.uf2`, which can be flashed into the pico.
+
 # Configuration
 
 Since each person may use their own LPF/PA etc, some of the code is
