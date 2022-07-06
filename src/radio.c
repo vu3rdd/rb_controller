@@ -371,9 +371,12 @@ radio_state *radio_init(void){
     s->split_val = 0;
     s->lock_val = 0;
     s->filter_val = 0;
+    s->filter_low = 0;
+    s->filter_high = 0;
+    s->filter_high_low_state = FILTER_LOW;
     s->rit_val = 0;
     s->rit = false;
-    s->zoom_enable = false;
+    s->zoom_enable = false; // filter bw selection
     s->drive_enable = 0;
     s->agc_mode = 0;
     s->zoom_val = 0;

@@ -327,33 +327,55 @@ void filter_enc_handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
   static unsigned int filter_last_count;
 
   if (filter_enc->count != filter_last_count) {
-    if (!rs->zoom_enable) {
-      // Take action here
-      if (filter_enc->count < filter_last_count) {
-        rs->filter_val += 1;
-        if (rs->filter_val >= 8)
-          rs->filter_val = 8;
-      } else {
-        if (rs->filter_val > 0)
-          rs->filter_val--;
-        else
-          rs->filter_val = 0;
+      if (!rs->zoom_enable) {
+	  // encoder is in filter mode
+	  // check if filter_val is 10 or 11. If so, rotating
+	  // the encoder would set either the lower limit of the
+	  // filter bw or upper limit of the filter bw.
+	  if (rs->filter_val == 10 || rs->filter_val == 11) {
+	      if (rs->filter_high_low_state == FILTER_LOW) {
+		  if (filter_enc->count < filter_last_count) {
+		      rs->filter_low += FILTER_CLICK_STEP;
+		  } else {
+		      rs->filter_low -= FILTER_CLICK_STEP;
+		  }
+		  // send ZZFLxxxxx;
+		  printf("ZZFL%5d;", rs->filter_low);
+	      } else {
+		  if (filter_enc->count < filter_last_count) {
+		      rs->filter_high += FILTER_CLICK_STEP;
+		  } else {
+		      rs->filter_high -= FILTER_CLICK_STEP;
+		  }
+		  // send ZZFHxxxxx;
+		  printf("ZZFH%5d;", rs->filter_high);
+	      }
+	  } else {
+	      if (filter_enc->count < filter_last_count) {
+		  rs->filter_val += 1;
+		  if (rs->filter_val >= 11)
+		      rs->filter_val = 11;
+	      } else {
+		  if (rs->filter_val > 0) {
+		      rs->filter_val--;
+		  }
+	      }
+	      printf("ZZFI%02d;", rs->filter_val);
+	      // printf("FW%04d;", filter_val);
+	  }
       }
-      printf("ZZFI%02d;", rs->filter_val);
-      // printf("FW%04d;", filter_val);
-    } else {
+  } else {
       if (filter_enc->count > filter_last_count) {
         rs->zoom_val++;
         if (rs->zoom_val > 8)
           rs->zoom_val = 8;
       } else {
-        if (rs->zoom_val <= 1)
-          rs->zoom_val = 1;
-        else
-          rs->zoom_val--;
+	  if (rs->zoom_val <= 1)
+	      rs->zoom_val = 1;
+	  else
+	      rs->zoom_val--;
       }
       printf("ZZPY%03d;", rs->zoom_val);
-    }
   }
 
   filter_last_count = filter_enc->count;
@@ -680,9 +702,18 @@ void i2c_expander_handler(radio_state *rs) {
             break;
         }
         case ENC_ZOOM_SW: {
-            rs->zoom_enable = !rs->zoom_enable;
-            break;
-        }
+	    if (rs->zoom_enable == false &&
+		// i.e. we are in filter bw selection state
+		// are we in filter_val 10 or 11?
+		// if so, clicking it again would toggle
+		// filter_high_low_state between low and high
+		(rs->filter_val == 10 || rs->filter_val == 11)) {
+		rs->filter_high_low_state = (rs->filter_high_low_state + 1) % 2;
+	    } else {
+		rs->zoom_enable = !rs->zoom_enable;
+	    }
+	    break;
+	}
         case ENC_MUTE_DRIVE_SW: {
             rs->mute = !rs->mute;
             if (rs->mute) {

@@ -20,9 +20,12 @@ typedef struct radio_state {
     int split_val;
     int lock_val;
     int filter_val;
+    int filter_low;
+    int filter_high;
     int rit_val;
     bool rit;
     bool zoom_enable;
+    int filter_high_low_state;
     int drive_enable;
     int agc_mode;
     int zoom_val;
@@ -35,6 +38,11 @@ typedef struct radio_state {
     int cw_speed;
     int mic_gain;
 } radio_state;
+
+typedef enum filter_low_high_select {
+    FILTER_LOW = 0,
+    FILTER_HIGH = 1,
+} filter_low_high_select;
 
 typedef enum mode {
     INVALIDMODE = -1,
@@ -51,6 +59,8 @@ typedef enum mode {
     SAM  = 10,
     DRM  = 11,
 } mode;
+
+#define FILTER_CLICK_STEP 50
 
 // exposed functions
 radio_state *radio_init(void);
