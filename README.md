@@ -36,7 +36,7 @@ The config.h file has some definitions that can be changed at build-time.
 
 1. Support for user configurable filters (var1/var2).
 2. Indication of muted audio.
-
+3. Indication of the slider being changed by the rotary encoder.
 
 # Credits
 
