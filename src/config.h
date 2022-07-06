@@ -6,8 +6,8 @@
 // read PTT out from FPGA
 // #define PTT_FROM_FPGA_INTO_ADC
 
-// LPF furuno (comment for XTO LPF)
-// #define LPF_FURUNO
+// Ukrainian BPF used by VU2YYF (rest of the folks, comment)
+// #define BPF_VU2YYF
 
 // uncomment the next line if VFO step needs to be decided based on
 // the VFO knob turning acceleration.

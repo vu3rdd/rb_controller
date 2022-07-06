@@ -29,6 +29,7 @@ typedef struct radio_state {
     uint8_t antsel;
     uint8_t rxant;
     uint8_t lpf;
+    uint8_t bpf;
     int zzmd1_index;
     bool power;
     bool mute;
