@@ -311,8 +311,78 @@ void tr_off(radio_state *rs) {
     write_register_mcp23008(9, rs->lpf);
 }
 
+void switchBPF(radio_state *rs, int f) {
+  int lower_cutoffs[] = {
+      1650000,
+      3250000,
+      6570000,
+      9500000,
+      13800000,
+      16700000,
+      19800000,
+      23400000,
+      26700000,
+  };
+
+  int higher_cutoffs[] = {
+      2050000,
+      4100000,
+      7400000,
+      10700000,
+      15300000,
+      18800000,
+      22400000,
+      26100000,
+      30100000,
+  };
+
+  // midpoint of the bpf
+  int cutoffs[] = {
+      1800000,
+      3500000,
+      7000000,
+      10000000,
+      14000000,
+      18000000,
+      21000000,
+      24000000,
+      28000000,
+  };
+
+  static uint8_t oldbpf = 0;
+
+  int control_word[] = {
+      0x07,     // what we want at the output of ULN2803 is 1000
+      0x0b,     // uln output is 0x04
+      0x03,     // 0x0c,
+      0x0d,     // 0x02,
+      0x05,     // 0x0a,
+      0x09,     // 0x06,
+      0x01,     // 0x0e,
+      0x0e,     // 0x01,
+      0x06,     // 0x09,
+  };
+
+  for (size_t i = 0; i < 9; i++) {
+      if (f > lower_cutoffs[i] && f < higher_cutoffs[i]) {
+	  int ctrl = control_word[i];
+	  rs->bpf = ctrl;
+	  break;
+      }
+  }
+
+  if (rs->bpf != oldbpf) {
+      write_register_mcp23008(9, rs->bpf);
+      oldbpf = rs->bpf;
+  }
+}
+
 // switch LPF based on frequency
 void switchLPF(radio_state *rs, int f) {
+#ifdef BPF_VU2YYF
+    switchBPF(rs, f);
+    return;
+#else // BPF_VU2YYF
   static uint8_t oldlpf = 0;
 #ifdef LPF_FURUNO
   int cutoffs[] = {
@@ -349,6 +419,7 @@ void switchLPF(radio_state *rs, int f) {
 #endif
       oldlpf = rs->lpf;
   }
+#endif // BPF_VU2YYF
 }
 
 
