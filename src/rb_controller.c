@@ -736,7 +736,7 @@ void ptt_handler(radio_state *rs) {
         } else { // PTT released
             // wait a bit before releasing ptt and putting radio into
             // rx mode
-            sleep_ms(300);
+            sleep_ms(200);
 
             printf("RX;");
         }
