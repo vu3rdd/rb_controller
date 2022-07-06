@@ -3,10 +3,6 @@
 
 // define build-time configurable things here
 
-// default is to have new button mapping. For VU2XTO's rig, it is
-// slightly different mapping
-#define NEW_BUTTON_MAPPING
-
 // read PTT out from FPGA
 #define PTT_FROM_FPGA_INTO_ADC
 
