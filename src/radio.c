@@ -353,7 +353,7 @@ void switchBPF(radio_state *rs, int f) {
 
   int control_word[] = {
       0x07,     // what we want at the output of ULN2803 is 1000
-      0x0b,     // uln output is 0x04
+      0x0b,     // uln output is 0x04 0100 - inv - 1011 - 0x0b
       0x03,     // 0x0c,
       0x0d,     // 0x02,
       0x05,     // 0x0a,
@@ -363,9 +363,21 @@ void switchBPF(radio_state *rs, int f) {
       0x06,     // 0x09,
   };
 
+  int lpf_control_word[] = {
+      0xf0,     // what we want at the output of ULN2803 is b0000
+      0x70,     // uln output is b1000
+      0xb0,     // 0x40,
+      0x30,     // 0xc0,
+      0xd0,     // 0x20,
+      0x50,     // 0xa0,
+      0x90,     // 0x60,
+      0x10,     // 0xe0,
+      0xe0,     // 0x10,
+  };
+
   for (size_t i = 0; i < 9; i++) {
       if (f > lower_cutoffs[i] && f < higher_cutoffs[i]) {
-	  int ctrl = control_word[i];
+	  int ctrl = control_word[i] | lpf_control_word[i];
 	  rs->bpf = ctrl;
 	  break;
       }
