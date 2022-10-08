@@ -708,12 +708,14 @@ void i2c_expander_handler(radio_state *rs) {
             break;
         }
         case BTN_RXANT: {
+#ifndef BPF_VU2YYF
             if (rs->rxant == 0)
                 rs->rxant = 128;
             else
                 rs->rxant = 0;
 #ifndef LPF_FURUNO
             write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+#endif
 #endif
 	    break;
         }
