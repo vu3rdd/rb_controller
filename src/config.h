@@ -17,4 +17,5 @@
 #define LIMIT_STEP_INCREMENTS
 
 #define PTT_HANGTIME_MS  150
+
 #endif
