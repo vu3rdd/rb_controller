@@ -330,8 +330,8 @@ void filter_enc_handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
       // Take action here
       if (filter_enc->count < filter_last_count) {
         rs->filter_val += 1;
-        if (rs->filter_val >= 8)
-          rs->filter_val = 8;
+        if (rs->filter_val >= 11)
+          rs->filter_val = 11;
       } else {
         if (rs->filter_val > 0)
           rs->filter_val--;
@@ -343,8 +343,8 @@ void filter_enc_handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
     } else {
       if (filter_enc->count > filter_last_count) {
         rs->zoom_val++;
-        if (rs->zoom_val > 8)
-          rs->zoom_val = 8;
+        if (rs->zoom_val > 11)
+          rs->zoom_val = 11;
       } else {
         if (rs->zoom_val <= 1)
           rs->zoom_val = 1;
