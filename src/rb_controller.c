@@ -91,7 +91,7 @@ bool MHZ_enable = false;
 uint8_t MCP23017_GPIOA_val = 0;
 
 #ifdef LIMIT_STEP_INCREMENTS
-uint8_t step_incr_max = 3;
+uint8_t step_incr_max = 4;
 #else
 uint8_t step_incr_max = 7;
 #endif
