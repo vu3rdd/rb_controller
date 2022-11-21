@@ -16,6 +16,6 @@
 // limit step size increments to 1 and 1000
 #define LIMIT_STEP_INCREMENTS
 
-#define PTT_HANGTIME_MS  150
+#define PTT_HANGTIME_MS  200
 
 #endif
