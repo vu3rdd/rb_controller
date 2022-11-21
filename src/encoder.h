@@ -22,6 +22,10 @@ typedef struct encoder {
 // CW: 0,0 -> 1,0 -> 0,1 -> 0,0
 // CCW: 0,0 -> 0,1 -> 1,0 -> 0,0
 
+// EC11E (AB): 10 -> 11 -> 01 -> 00 -> ...
+// i.e. 2 -> 3 -> 1 -> 0
+// if (BA): 01 -> 11 -> 10 -> 00. i.e. 0 -> 1 -> 3 -> 2 -> 0
+
 #define DIR_NONE 0x0
 #define DIR_CW   0x10  // Clockwise step.
 #define DIR_CCW  0x20  // Counter-clockwise step.

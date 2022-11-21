@@ -724,6 +724,25 @@ void i2c_expander_handler(radio_state *rs) {
     }
 }
 
+/* rx to tx transition: */
+
+/* - ptt in, from pico to radioberry (via software CAT) */
+/* - ptt out into pico from radioberry */
+/* - ptt relay on */
+/* - T/R switch to T */
+/* - af amp mute */
+/* - sleep 20ms */
+/* - PA bias enable */
+
+/* tx to rx transition */
+/* - sleep ptt hang time (200ms) */
+/* - set radioberry to rx */
+/* - bias off */
+/* - sleep 20ms */
+/* - af amp unmute */
+/* - ptt relay disengage */
+/* - t/r relay to rx */
+
 void ptt_handler(radio_state *rs) {
     static int old_ptt = -1;
     static int old_ptt_from_fpga = -1;
