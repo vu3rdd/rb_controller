@@ -781,7 +781,7 @@ void ptt_handler(radio_state *rs) {
 	    // put T/R to Tx (12v on the TD62783 which already has an internal pull up)
 	    write_register_mcp23008(9, rs->lpf | (1U << 7));
 #endif
-            sleep_ms(20);
+            // sleep_ms(10);
 
             MCP23017_GPIOA_val &= ~BIAS_OUT;
 
@@ -790,7 +790,7 @@ void ptt_handler(radio_state *rs) {
             MCP23017_GPIOA_val |= BIAS_OUT;
 
             writemcp23017(MCP23017_GPIOA_val);
-            sleep_ms(20);
+            // sleep_ms(20);
 
             MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
             MCP23017_GPIOA_val |= PTT_OUT_RELAY;
