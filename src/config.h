@@ -4,7 +4,7 @@
 // define build-time configurable things here
 
 // read PTT out from FPGA
-#define PTT_FROM_FPGA_INTO_ADC
+// #define PTT_FROM_FPGA_INTO_ADC
 
 // LPF furuno (comment for XTO LPF)
 // #define LPF_FURUNO
