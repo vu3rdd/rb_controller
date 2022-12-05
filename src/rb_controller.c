@@ -38,8 +38,8 @@ uint32_t int_status;
 
 void waitforradio();
 
-volatile int KeyPressed = false, LongKeyPressed = false, Keyval = 0, old_Keyval;
-unsigned int col;
+volatile int key_pressed = false, long_key_pressed = false, keyval = 0, old_keyval;
+
 volatile uint kp_gpio = KPCX;
 
 const int timer_tick_period_ms = 500; // 500ms
@@ -363,6 +363,7 @@ void filter_enc_handler(radio_state *rs, encoder *filter_enc) { // Zoom - Filter
 }
 
 void keypad_Handler(radio_state *rs) {
+    unsigned int col;
     for (int i = 0; i < 4; i++) {
         gpio_put(rows[i], 0);
     }
@@ -381,22 +382,26 @@ void keypad_Handler(radio_state *rs) {
         gpio_put(rows[row], 1);
         sleep_ms(10);
         if (gpio_get(kp_gpio)) {
-            Keyval = keypad_4X4[row][col];
-            KeyPressed = true;
+            keyval = keypad_4X4[row][col];
+            key_pressed = true;
             sleep_ms(250);
             if (gpio_get(kp_gpio)) {
-                LongKeyPressed = true;
+                long_key_pressed = true;
             }
         }
         gpio_put(rows[row], 0);
+        if (key_pressed == true) {
+            // do not scan keys further
+            break;
+        }
     }
 
     for (int i = 0; i < 4; i++) {
         gpio_put(rows[i], 1);
     }
 
-    if (KeyPressed) {
-        switch (Keyval) {
+    if (key_pressed) {
+        switch (keyval) {
         case BTN_CTUNE:
             printf("ZZCN%d;", rs->ctune);
             if (rs->ctune == 0)
@@ -486,7 +491,7 @@ void keypad_Handler(radio_state *rs) {
                 nb2_val = 0;
             }
 
-            if (LongKeyPressed) {
+            if (long_key_pressed) {
                 rs->snb_val = getSNB();
                 rs->snb_val = (rs->snb_val + 1) % 2;
                 printf("ZZNN%d;", rs->snb_val);
@@ -512,7 +517,7 @@ void keypad_Handler(radio_state *rs) {
                 nr2_val = 0;
             }
 
-            if (LongKeyPressed) {
+            if (long_key_pressed) {
                 rs->anf_val = getANF();
                 // toggle ANF state
                 rs->anf_val = (rs->anf_val + 1) % 2;
@@ -597,9 +602,9 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
     }
-    Keyval = 0;
-    KeyPressed = false;
-    LongKeyPressed = false;
+    keyval = 0;
+    key_pressed = false;
+    long_key_pressed = false;
     kp_gpio = KPCX;
 }
 
@@ -615,8 +620,7 @@ void waitforradio(radio_state *rs) {
   }
 }
 
-void Keypad4X4_callback_Handler(uint gpio) {
-    // printf("Keypad4X4_callback_Handler: %d\n", gpio);
+void keypad4X4_callback_handler(uint gpio) {
     kp_gpio = gpio;
 }
 
@@ -624,24 +628,41 @@ void gpio_callback(uint gpio, uint32_t events) {
     int_status = save_and_disable_interrupts();
     if ((to_ms_since_boot(get_absolute_time())-time)>delayTime) {
         time = to_ms_since_boot(get_absolute_time());
-        if ((gpio == KPC0) ||
-            (gpio == KPC1) ||
-            (gpio == KPC2) ||
-            (gpio == KPC3)) {
-            Keypad4X4_callback_Handler(gpio);
+        switch(gpio) {
+        case KPC0:
+        case KPC1:
+        case KPC2:
+        case KPC3:
+            keypad4X4_callback_handler(gpio);
+            break;
+        default:
+            break;
         }
     }
 
-    if ((gpio == AUDIO_GAIN_ENC_A) || (gpio == AUDIO_GAIN_ENC_B)) {
+    switch(gpio) {
+    case AUDIO_GAIN_ENC_A:
+    case AUDIO_GAIN_ENC_B:
         encoder_isr(encoders[0]);
-    } else if ((gpio == RXGAIN_ENC_A) || (gpio == RXGAIN_ENC_B)) {
+        break;
+    case RXGAIN_ENC_A:
+    case RXGAIN_ENC_B:
         encoder_isr(encoders[1]);
-    } else if ((gpio == VFO_ENC_A) || (gpio == VFO_ENC_B)) {
+        break;
+    case VFO_ENC_A:
+    case VFO_ENC_B:
         encoder_isr(encoders[2]);
-    } else if ((gpio == RIT_ENC_A) || (gpio == RIT_ENC_B)) {
+        break;
+    case RIT_ENC_A:
+    case RIT_ENC_B:
         encoder_isr(encoders[3]);
-    } else if ((gpio == FILTER_ENC_A) || (gpio == FILTER_ENC_B)) {
+        break;
+    case FILTER_ENC_A:
+    case FILTER_ENC_B:
         encoder_isr(encoders[4]);
+        break;
+    default:
+        break;
     }
     restore_interrupts(int_status);
 }
