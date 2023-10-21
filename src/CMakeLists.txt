@@ -6,6 +6,8 @@ add_executable(rb_controller
   keyer.c
   )
 
+target_compile_definitions(rb_controller PRIVATE PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1)
+
 # pull in common dependencies
 target_link_libraries(rb_controller pico_stdlib hardware_i2c hardware_pwm hardware_gpio)
 
