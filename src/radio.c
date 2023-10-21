@@ -396,16 +396,6 @@ void switchLPF(radio_state *rs, int f) {
     return;
 #else // BPF_VU2YYF
   static uint8_t oldlpf = 0;
-#ifdef LPF_FURUNO
-  int cutoffs[] = {
-      2600000,
-      3900000,
-      6400000,
-      10000000,
-      19000000,
-      30000000,
-  };
-#else
   int cutoffs[] = {
       2000000,
       3000000,
@@ -414,7 +404,6 @@ void switchLPF(radio_state *rs, int f) {
       16000000,
       30000000,
   };
-#endif
 
   for (size_t i = 0; i < 6; i++) {
       if (f < cutoffs[i]) {
@@ -424,11 +413,7 @@ void switchLPF(radio_state *rs, int f) {
   }
 
   if (rs->lpf != oldlpf) {
-#ifndef LPF_FURUNO
       write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
-#else
-      write_register_mcp23008(9, rs->lpf);
-#endif
       oldlpf = rs->lpf;
   }
 #endif // BPF_VU2YYF

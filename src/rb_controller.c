@@ -577,10 +577,8 @@ void keypad_Handler(radio_state *rs) {
                 rs->antsel = 64;
             else
                 rs->antsel = 0;
-#ifndef LPF_FURUNO
             write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
             write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
-#endif
 	    break;
         case BTN_ON_OFF:
             if (rs->power) {
@@ -737,9 +735,7 @@ void i2c_expander_handler(radio_state *rs) {
                 rs->rxant = 128;
             else
                 rs->rxant = 0;
-#ifndef LPF_FURUNO
             write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
-#endif
 #endif
 	    break;
         }
@@ -794,16 +790,10 @@ void ptt_handler(radio_state *rs) {
         if (ptt_from_fpga == 0) { // fpga in tx (either because vox is
                                   // on or ptt pressed)
             MCP23017_GPIOA_val &= ~PTT_OUT_RELAY;
-#ifndef LPF_FURUNO
             MCP23017_GPIOA_val &= ~TR_RELAY_OUT;
-#endif
             MCP23017_GPIOA_val |= AM_AMP_MUTE_ON_PTT;
 
             writemcp23017(MCP23017_GPIOA_val);
-#ifdef LPF_FURUNO
-	    // put T/R to Tx (12v on the TD62783 which already has an internal pull up)
-	    write_register_mcp23008(9, rs->lpf | (1U << 7));
-#endif
             // sleep_ms(10);
 
             MCP23017_GPIOA_val &= ~BIAS_OUT;
@@ -817,12 +807,7 @@ void ptt_handler(radio_state *rs) {
 
             MCP23017_GPIOA_val &= ~AM_AMP_MUTE_ON_PTT;
             MCP23017_GPIOA_val |= PTT_OUT_RELAY;
-#ifndef LPF_FURUNO
             MCP23017_GPIOA_val |= TR_RELAY_OUT;
-#else
-	    // put T/R into Rx
-	    write_register_mcp23008(9, rs->lpf);
-#endif
 
             writemcp23017(MCP23017_GPIOA_val);
         }
