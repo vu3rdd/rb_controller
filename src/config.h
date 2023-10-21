@@ -3,9 +3,6 @@
 
 // define build-time configurable things here
 
-// read PTT out from FPGA
-// #define PTT_FROM_FPGA_INTO_ADC
-
 // Ukrainian BPF used by VU2YYF (rest of the folks, comment)
 // #define BPF_VU2YYF
 
