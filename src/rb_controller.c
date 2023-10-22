@@ -501,21 +501,10 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
         case BTN_NR: {
-            int nr_val = getNR();
-            int nr2_val = getNR2();
+            int current_nr_val = getNR();
+	    int new_nr_val = 0;
 
-            if (nr_val == 0 && nr2_val == 0) {
-                // nr and nr2 is off, so turn on nb
-                nr_val = 1;
-            } else if (nr_val == 1 && nr2_val == 0) {
-                // nr is on, nr2 is off, so turn off nr and turn on nr2
-                nr_val = 0;
-                nr2_val = 1;
-            } else if (nr_val == 0 && nr2_val == 1) {
-                // nr is off, nr2 is on -> turn off nr and nr2
-                nr_val = 0;
-                nr2_val = 0;
-            }
+	    new_nr_val = (current_nr_val + 1) % 4;
 
             if (long_key_pressed) {
                 rs->anf_val = getANF();
@@ -525,7 +514,7 @@ void keypad_Handler(radio_state *rs) {
                 break;
             }
 
-            printf("ZZNR%d;ZZNS%d;", nr_val, nr2_val);
+            printf("ZZNR%d;", new_nr_val);
             break;
         }
         case BTN_VFO_A_B:

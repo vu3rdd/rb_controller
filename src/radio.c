@@ -216,7 +216,6 @@ int getNB2(void) {
     return (nb[4] == '0' ? 0 : 1);
 }
 
-
 int getNR(void) {
     printf("ZZNR;"); // try to read the current mode
     char nr[7];
@@ -231,24 +230,7 @@ int getNR(void) {
         }
     }
 
-    return (nr[4] == '0' ? 0 : 1);
-}
-
-int getNR2(void) {
-    printf("ZZNS;"); // try to read the current mode
-    char nr[7];
-
-    memset(nr, '\0', 7);
-
-    for (int i = 0; i < 7; i++) {
-        nr[i] = getchar();
-        if (nr[i] == ';') {
-            nr[i] = '\0';
-            break;
-        }
-    }
-
-    return (nr[4] == '0' ? 0 : 1);
+    return atoi(&nr[4]);
 }
 
 int getSNB(void) {
