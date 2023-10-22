@@ -504,7 +504,7 @@ void keypad_Handler(radio_state *rs) {
             int current_nr_val = getNR();
 	    int new_nr_val = 0;
 
-	    new_nr_val = (current_nr_val + 1) % 4;
+	    new_nr_val = (current_nr_val + 1) % 5;
 
             if (long_key_pressed) {
                 rs->anf_val = getANF();
