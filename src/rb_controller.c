@@ -423,22 +423,8 @@ void keypad_Handler(radio_state *rs) {
             break;
         case BTN_AGC: {
             rs->agc_mode = getAGCMode();
-            switch (rs->agc_mode) {
-            case 0:
-                rs->agc_mode = 2;
-                break;
-            case 2:
-                rs->agc_mode = 3;
-                break;
-            case 3:
-                rs->agc_mode = 4;
-                break;
-            case 4:
-                rs->agc_mode = 2;
-                break;
-            default:
-                rs->agc_mode = 2;
-            }
+	    rs->agc_mode = (rs->agc_mode + 1) % 5;
+
             printf("ZZGT%d;", rs->agc_mode);
             break;
         }
