@@ -68,7 +68,7 @@ unsigned int keypad_4X4[4][4] = {
 
 // top right 3x3
 #define BTN_VFO_A_B      7
-#define BTN_MHZ_STEP    10
+#define BTN_TOGGLE_AUDIO_OUT    10
 #define BTN_VFO_SWAP     6
 #define BTN_SPLIT        8
 #define BTN_NB          11
@@ -492,7 +492,8 @@ void keypad_Handler(radio_state *rs) {
         case BTN_VFO_A_B:
             printf("ZZVS0;");
             break;
-        case BTN_MHZ_STEP:
+        case BTN_TOGGLE_AUDIO_OUT:
+	    printf("ZZAO;");
             break;
         case BTN_VFO_SWAP: {
             printf("ZZVS2;");
