@@ -87,7 +87,6 @@ unsigned int keypad_4X4[4][4] = {
 #define TR_RELAY_OUT        64
 #define AM_AMP_MUTE_ON_PTT 128
 
-bool MHZ_enable = false;
 uint8_t MCP23017_GPIOA_val = 0;
 
 #ifdef LIMIT_STEP_INCREMENTS
@@ -430,33 +429,20 @@ void keypad_Handler(radio_state *rs) {
         }
         case BTN_BAND_UP: {
             int f = getVFO('A');
-            if (!MHZ_enable) {
-                printf("ZZBU;");
-                sleep_ms(15);
-                // update f
-                f = getVFO('A');
-            } else {
-                f += 1e6;
-                if (f > 30e6)
-                    f = 30e6;
-                printf("ZZFA%011lld;", f);
-                // sleep_ms(15);
-            }
+	    printf("ZZBU;");
+	    sleep_ms(15);
+
+	    // update f
+	    f = getVFO('A');
             switchLPF(rs, f);
             break;
         }
         case BTN_BAND_DWN: {
             int f = getVFO('A');
-            if (!MHZ_enable) {
-                printf("ZZBD;");
-                // sleep_ms(15);
-                f = getVFO('A');
-            } else {
-                if (f > 1e6)
-                    f -= 1e6;
-                printf("ZZFA%011lld;", f);
-                sleep_ms(15);
-            }
+	    printf("ZZBD;");
+	    // sleep_ms(15);
+
+	    f = getVFO('A');
             switchLPF(rs, f);
             break;
         }
@@ -507,14 +493,6 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZVS0;");
             break;
         case BTN_MHZ_STEP:
-            if (MHZ_enable) {
-                MHZ_enable = false;
-                // printf("ZZTI0;");
-            } else {
-                MHZ_enable = true;
-                // printf("ZZTI1;");
-            }
-            // printf("ZZVS1;");
             break;
         case BTN_VFO_SWAP: {
             printf("ZZVS2;");
