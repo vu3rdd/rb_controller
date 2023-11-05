@@ -58,9 +58,9 @@ radio_state *radio_init(void);
 
 // these functions directly read from the radio and not from the
 // cached state type
-int getVFO(char AorB);
+uint32_t getVFO(char AorB);
 mode getMode(void);
-void switchLPF(radio_state *rs, int f);
+void switchLPF(radio_state *rs, uint32_t f);
 int getStepIndex(void);
 int getAudioGain(void);
 int getNB(void);

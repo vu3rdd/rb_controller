@@ -294,7 +294,7 @@ void vfo_enc_handler(radio_state *rs, encoder *vfo_enc) {
       printf("ZZAE01;");
     }
     // sleep_ms(10);
-    int f = getVFO('A');
+    uint32_t f = getVFO('A');
     switchLPF(rs, f);
   }
 
@@ -428,7 +428,7 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
         case BTN_BAND_UP: {
-            int f = getVFO('A');
+            uint32_t f = getVFO('A');
 	    printf("ZZBU;");
 	    sleep_ms(15);
 
@@ -438,7 +438,7 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
         case BTN_BAND_DWN: {
-            int f = getVFO('A');
+            uint32_t f = getVFO('A');
 	    printf("ZZBD;");
 	    // sleep_ms(15);
 
@@ -498,7 +498,7 @@ void keypad_Handler(radio_state *rs) {
         case BTN_VFO_SWAP: {
             printf("ZZVS2;");
 
-            int f = getVFO('A');
+            uint32_t f = getVFO('A');
             switchLPF(rs, f);
             break;
         }
@@ -920,7 +920,7 @@ int main(void) {
     struct repeating_timer timer;
     add_repeating_timer_ms(-(timer_tick_period_ms), repeating_timer_callback, NULL, &timer);
 
-    int f = getVFO('A');
+    uint32_t f = getVFO('A');
     switchLPF(rs, f);
 
     static unsigned int last_vfo_count;
@@ -963,7 +963,7 @@ int main(void) {
             last_vfo_count = vfo_enc->count;
 #endif // VFO_ADAPTIVE
 
-            int f = getVFO('A');
+            uint32_t f = getVFO('A');
             switchLPF(rs, f);
 
             // switch between LSB and USB at the 10MHz boundary

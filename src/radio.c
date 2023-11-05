@@ -8,7 +8,7 @@
 #include "config.h"
 
 // get current vfo frequency (A or B)
-int getVFO(char AorB) {
+uint32_t getVFO(char AorB) {
     if (AorB == 'A') {
         printf("ZZFA;");
     } else if (AorB == 'B') {
@@ -28,7 +28,7 @@ int getVFO(char AorB) {
         }
     }
 
-    return (int)strtol(&resp[4], NULL, 10);
+    return (uint32_t)strtol(&resp[4], NULL, 10);
 }
 
 int getRXAttenuation(void) {
@@ -293,8 +293,8 @@ void tr_off(radio_state *rs) {
     write_register_mcp23008(9, rs->lpf);
 }
 
-void switchBPF(radio_state *rs, int f) {
-  int lower_cutoffs[] = {
+void switchBPF(radio_state *rs, uint32_t f) {
+  uint32_t lower_cutoffs[] = {
       1650000,
       3250000,
       6570000,
@@ -306,7 +306,7 @@ void switchBPF(radio_state *rs, int f) {
       26700000,
   };
 
-  int higher_cutoffs[] = {
+  uint32_t higher_cutoffs[] = {
       2050000,
       4100000,
       7400000,
@@ -319,7 +319,7 @@ void switchBPF(radio_state *rs, int f) {
   };
 
   // midpoint of the bpf
-  int cutoffs[] = {
+  uint32_t cutoffs[] = {
       1800000,
       3500000,
       7000000,
@@ -372,13 +372,13 @@ void switchBPF(radio_state *rs, int f) {
 }
 
 // switch LPF based on frequency
-void switchLPF(radio_state *rs, int f) {
+void switchLPF(radio_state *rs, uint32_t f) {
 #ifdef BPF_VU2YYF
     switchBPF(rs, f);
     return;
 #else // BPF_VU2YYF
   static uint8_t oldlpf = 0;
-  int cutoffs[] = {
+  uint32_t cutoffs[] = {
       2000000,
       3000000,
       5000000,
