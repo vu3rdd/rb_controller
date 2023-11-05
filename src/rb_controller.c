@@ -147,10 +147,10 @@ void mcp1_gpio_callback(uint gpio, uint32_t events) {
 void setup_input(uint gpio_irq) {
   int result = 0;
 
-  result = setup(MIRROR_INTERRUPTS, POLARITY_INTERRUPT_ACTIVE_LOW);
-  result = set_io_direction(MCP_PINS_INPUT);
-  result = set_pullup(MCP_PINS_PULL_UP);
-  result = set_interrupt_type(MCP_ALL_PINS_COMPARE_TO_LAST);
+  result = mcp23017_setup(MIRROR_INTERRUPTS, POLARITY_INTERRUPT_ACTIVE_LOW);
+  result = mcp23017_set_io_direction(MCP_PINS_INPUT);
+  result = mcp23017_set_pullup(MCP_PINS_PULL_UP);
+  result = mcp23017_set_interrupt_type(MCP_ALL_PINS_COMPARE_TO_LAST);
   // result = enable_interrupt(MCP_ALL_PINS_INTERRUPT_ENABLED);
 
   // gpio_set_irq_enabled_with_callback(gpio_irq, GPIO_IRQ_EDGE_FALL, true,
@@ -193,13 +193,9 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
           if (rxgainenc->count < rxgain_last_count) {
               if (rs->rx_gain < 60)
                   rs->rx_gain++;
-              /* if (rs->rx_gain > 0) */
-              /*     rs->rx_gain--; */
           } else if (rxgainenc->count > rxgain_last_count) {
               if (rs->rx_gain > 0)
                   rs->rx_gain--;
-              /* if (rs->rx_gain < 60) */
-              /*     rs->rx_gain++; */
           }
           printf("RA%02d;", rs->rx_gain);
       }
@@ -266,7 +262,7 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
 }
 
 void writemcp23017(uint8_t val) {
-    write_register(MCP23017_GPIOA, ~val);
+    mcp23017_write_register(MCP23017_GPIOA, ~val);
 }
 
 /* // timer tick */
@@ -428,21 +424,21 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
         case BTN_BAND_UP: {
-            uint32_t f = getVFO('A');
+            // uint32_t f = getVFO('A');
 	    printf("ZZBU;");
-	    sleep_ms(15);
+	    // sleep_ms(15);
 
 	    // update f
-	    f = getVFO('A');
+	    uint32_t f = getVFO('A');
             switchLPF(rs, f);
             break;
         }
         case BTN_BAND_DWN: {
-            uint32_t f = getVFO('A');
+            // uint32_t f = getVFO('A');
 	    printf("ZZBD;");
 	    // sleep_ms(15);
 
-	    f = getVFO('A');
+	    uint32_t f = getVFO('A');
             switchLPF(rs, f);
             break;
         }
@@ -531,8 +527,8 @@ void keypad_Handler(radio_state *rs) {
                 rs->antsel = 64;
             else
                 rs->antsel = 0;
-            write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
-            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+            mcp23017_write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
+            mcp23008_write_register(9, rs->lpf | rs->antsel | rs->rxant);
 	    break;
         case BTN_ON_OFF:
             if (rs->power) {
@@ -625,7 +621,7 @@ void i2c_expander_handler(radio_state *rs) {
     // int pin = get_last_interrupt_pin();
     // int int_values = get_interrupt_values();
     int gpb_input; // = update_input_values();
-    gpb_input = read_register(MCP23017_GPIOB);
+    gpb_input = mcp23017_read_register(MCP23017_GPIOB);
     bool long_press = false;
 
     if (gpb_input != old_gpb_input) {
@@ -633,7 +629,7 @@ void i2c_expander_handler(radio_state *rs) {
 
         sleep_ms(250);
         // read again to see if we get the same values
-        int input_values_2 = read_register(MCP23017_GPIOB);
+        int input_values_2 = mcp23017_read_register(MCP23017_GPIOB);
 
         if (input_values_2 == gpb_input) {
             // long press
@@ -689,7 +685,7 @@ void i2c_expander_handler(radio_state *rs) {
                 rs->rxant = 128;
             else
                 rs->rxant = 0;
-            write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+            mcp23008_write_register(9, rs->lpf | rs->antsel | rs->rxant);
 #endif
 	    break;
         }
@@ -825,7 +821,7 @@ int main(void) {
 
     setup_input(MCP_IRQ_GPIO_PIN);
     // configure mcp23008 GPIO as outputs
-    write_register_mcp23008(0, 0x00);
+    mcp23008_write_register(0, 0x00);
 
     encoder *audio_gain_enc = encoder_init(AUDIO_GAIN_ENC_A, AUDIO_GAIN_ENC_B);
     encoders[0] = audio_gain_enc;
@@ -924,7 +920,7 @@ int main(void) {
     switchLPF(rs, f);
 
     static unsigned int last_vfo_count;
-    int last_f = f;
+    uint32_t last_f = f;
     while (1) {
         rit_enc_handler(rs, rit_enc);
         rxgain_enc_handler(rs, rxgain_enc);
@@ -963,7 +959,7 @@ int main(void) {
             last_vfo_count = vfo_enc->count;
 #endif // VFO_ADAPTIVE
 
-            uint32_t f = getVFO('A');
+            f = getVFO('A');
             switchLPF(rs, f);
 
             // switch between LSB and USB at the 10MHz boundary

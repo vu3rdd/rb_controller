@@ -286,11 +286,11 @@ int getAGCMode(void) {
 
 void tr_on(radio_state *rs) {
     // do not disturb any of the LPF state. Turn only the T/R line to 1.
-    write_register_mcp23008(9, rs->lpf | (1U << 7));
+    mcp23008_write_register(9, rs->lpf | (1U << 7));
 }
 
 void tr_off(radio_state *rs) {
-    write_register_mcp23008(9, rs->lpf);
+    mcp23008_write_register(9, rs->lpf);
 }
 
 void switchBPF(radio_state *rs, uint32_t f) {
@@ -366,7 +366,7 @@ void switchBPF(radio_state *rs, uint32_t f) {
   }
 
   if (rs->bpf != oldbpf) {
-      write_register_mcp23008(9, rs->bpf);
+      mcp23008_write_register(9, rs->bpf);
       oldbpf = rs->bpf;
   }
 }
@@ -395,7 +395,7 @@ void switchLPF(radio_state *rs, uint32_t f) {
   }
 
   if (rs->lpf != oldlpf) {
-      write_register_mcp23008(9, rs->lpf | rs->antsel | rs->rxant);
+      mcp23008_write_register(9, rs->lpf | rs->antsel | rs->rxant);
       oldlpf = rs->lpf;
   }
 #endif // BPF_VU2YYF
