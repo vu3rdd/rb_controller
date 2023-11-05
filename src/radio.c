@@ -28,7 +28,7 @@ uint32_t getVFO(char AorB) {
         }
     }
 
-    return (uint32_t)strtol(&resp[4], NULL, 10);
+    return (uint32_t)strtoll(&resp[4], NULL, 10);
 }
 
 int getRXAttenuation(void) {
