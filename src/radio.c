@@ -31,7 +31,9 @@ uint32_t getVFO(char AorB) {
     return (uint32_t)strtoll(&resp[4], NULL, 10);
 }
 
-int getRXAttenuation(void) {
+// pass a pointer to a variable to which the result
+// is written. returns -1 for error, 0 for success.
+int getRXAttenuation(int *val) {
     printf("RA;");
     char attn_buffer[8];
 
@@ -46,17 +48,13 @@ int getRXAttenuation(void) {
 
     int attn = strtol(&attn_buffer[2], NULL, 10);
     if (errno != 0) {
-	// XXX: returning -1 is just plain wrong. -1 is in the range
-	// of valid values this function can return. We should change
-	// the API of this function to take a pointer that would have
-	// the return value and the return value should indicate an
-	// error or success.
         return -1;
     }
 
     // gain is in the form "XX00", so get rid of the last two digits
     // by dividing the number by 100.
-    return attn/100;
+    *val = attn/100;
+    return 0;
 }
 
 int getTXDrive(void) {

@@ -186,7 +186,11 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
       // that number is what is returned by the command when asked
       // for the attenuation.
       if (rxgainenc->count != rxgain_last_count) {
-          int current_gain = getRXAttenuation();
+          int current_gain = 0;
+	  if (getRXAttenuation(&current_gain) < 0) {
+	      // error. Ideally we should log something here.
+	      break;
+	  }
           rs->rx_gain = current_gain;
 
           // Take action here

@@ -72,7 +72,7 @@ int getSNB(void);
 int getANF(void);
 int getAGCMode(void);
 int getMicGain(void);
-int getRXAttenuation(void);
+int getRXAttenuation(int *);
 int getTXDrive(void);
 void setStepSize(unsigned int index);
 
