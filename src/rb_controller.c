@@ -280,17 +280,24 @@ void vfo_enc_handler(radio_state *rs, encoder *vfo_enc) {
   // for each full-pulse period. Also, since the pulse rate is high,
   // it may be better to divide this rate to something smaller to make
   // the turning a lot smoother.
-
   if (vfo_enc->count != vfo_last_count) {
     // Take action here
     if (vfo_enc->count < vfo_last_count) {
-      printf("ZZAF01;");
+	  if (rs->vfoA_or_B == 'A') {
+	      printf("ZZAF01;");
+	  } else {
+	      printf("ZZBF01;");
+	  }
     }
     if (vfo_enc->count > vfo_last_count) {
-      printf("ZZAE01;");
+	if (rs->vfoA_or_B == 'A') {
+	    printf("ZZAE01;");
+	} else {
+	    printf("ZZBE01;");
+	}
     }
     // sleep_ms(10);
-    uint32_t f = getVFO('A');
+    uint32_t f = getVFO(rs->vfoA_or_B);
     switchLPF(rs, f);
   }
 
@@ -424,21 +431,21 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
         case BTN_BAND_UP: {
-            // uint32_t f = getVFO('A');
+            // uint32_t f = getVFO(rs->vfoA_or_B);
 	    printf("ZZBU;");
 	    // sleep_ms(15);
 
 	    // update f
-	    uint32_t f = getVFO('A');
+	    uint32_t f = getVFO(rs->vfoA_or_B);
             switchLPF(rs, f);
             break;
         }
         case BTN_BAND_DWN: {
-            // uint32_t f = getVFO('A');
+            // uint32_t f = getVFO(rs->vfoA_or_B);
 	    printf("ZZBD;");
 	    // sleep_ms(15);
 
-	    uint32_t f = getVFO('A');
+	    uint32_t f = getVFO(rs->vfoA_or_B);
             switchLPF(rs, f);
             break;
         }
@@ -492,9 +499,19 @@ void keypad_Handler(radio_state *rs) {
 	    printf("ZZAO;");
             break;
         case BTN_VFO_SWAP: {
+	    if (long_key_pressed) {
+		// change the currently selected VFO
+		// from A to B or B to A.
+		if (rs->vfoA_or_B == 'A') {
+		    rs->vfoA_or_B = 'B';
+		} else if (rs->vfoA_or_B == 'B') {
+		    rs->vfoA_or_B = 'A';
+		}
+		break;
+	    }
             printf("ZZVS2;");
 
-            uint32_t f = getVFO('A');
+            uint32_t f = getVFO(rs->vfoA_or_B);
             switchLPF(rs, f);
             break;
         }
@@ -916,7 +933,7 @@ int main(void) {
     struct repeating_timer timer;
     add_repeating_timer_ms(-(timer_tick_period_ms), repeating_timer_callback, NULL, &timer);
 
-    uint32_t f = getVFO('A');
+    uint32_t f = getVFO(rs->vfoA_or_B);
     switchLPF(rs, f);
 
     static unsigned int last_vfo_count;
@@ -959,7 +976,7 @@ int main(void) {
             last_vfo_count = vfo_enc->count;
 #endif // VFO_ADAPTIVE
 
-            f = getVFO('A');
+            f = getVFO(rs->vfoA_or_B);
             switchLPF(rs, f);
 
             // switch between LSB and USB at the 10MHz boundary

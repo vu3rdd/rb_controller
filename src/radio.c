@@ -438,5 +438,7 @@ radio_state *radio_init(void){
     s->zzmd1_index = 0;
     s->power = true;
     s->mute = false;
+    s->vfoA_or_B = 'A';
+
     return s;
 }

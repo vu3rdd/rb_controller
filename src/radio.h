@@ -35,6 +35,7 @@ typedef struct radio_state {
     bool mute;
     int cw_speed;
     int mic_gain;
+    char vfoA_or_B;
 } radio_state;
 
 typedef enum mode {
