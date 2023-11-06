@@ -46,6 +46,11 @@ int getRXAttenuation(void) {
 
     int attn = strtol(&attn_buffer[2], NULL, 10);
     if (errno != 0) {
+	// XXX: returning -1 is just plain wrong. -1 is in the range
+	// of valid values this function can return. We should change
+	// the API of this function to take a pointer that would have
+	// the return value and the return value should indicate an
+	// error or success.
         return -1;
     }
 
