@@ -57,7 +57,7 @@ int getRXAttenuation(int *val) {
     return 0;
 }
 
-int getTXDrive(void) {
+int getTXDrive(int *val) {
     printf("PC;");
     char drive_buffer[7]; // PCXXX;
 
@@ -75,7 +75,8 @@ int getTXDrive(void) {
         return -1;
     }
 
-    return drive;
+    *val = drive;
+    return 0;
 }
 
 int getStepIndex(void) {

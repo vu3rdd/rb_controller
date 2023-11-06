@@ -209,7 +209,11 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
       // tx gain
       if (rxgainenc->count != rxgain_last_count) {
           // Take action here
-          rs->tx_gain = getTXDrive();
+	  int tx_gain = 0;
+          if (getTXDrive(&tx_gain) < 0) {
+	      break;
+	  }
+	  rs->tx_gain = tx_gain;
 
           if (rxgainenc->count < rxgain_last_count) {
               rs->tx_gain++;
