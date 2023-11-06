@@ -231,8 +231,11 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
       // increment by one.
       // valid values are 0 to 60, so there should be a cap
       if (rxgainenc->count != rxgain_last_count) {
-          int mode = getMode();
-          if (mode == CWL || mode == CWU) {
+          mode m = INVALIDMODE;
+	  if (getMode(&m) < 0) {
+	      break;
+	  }
+          if (m == CWL || m == CWU) {
               if (rxgainenc->count < rxgain_last_count) {
                   rs->cw_speed++;
                   rs->cw_speed = (rs->cw_speed > 60 ? 60 : rs->cw_speed);
@@ -241,8 +244,12 @@ void rxgain_enc_handler(radio_state *rs, encoder *rxgainenc) {
                   rs->cw_speed = (rs->cw_speed < 0 ? 0 : rs->cw_speed);
               }
               printf("ZZCS%02d;", rs->cw_speed);
-          } else if (mode == LSB || mode == USB || mode == AM || mode == DSB) {
-              rs->mic_gain = getMicGain();
+          } else if (m == LSB || m == USB || m == AM || m == DSB) {
+	      int mic_gain = 0;
+	      if (getMicGain(&mic_gain) < 0) {
+		  break;
+	      }
+              rs->mic_gain = mic_gain;
               if (rxgainenc->count < rxgain_last_count) {
                   // increase mic gain
                   rs->mic_gain++;
@@ -318,7 +325,11 @@ void audio_gain_enc_handler(radio_state *rs, encoder *audio_gain_enc) {
   if (audio_gain_enc->count != audio_gain_last_count) {
       // Take action here
       // get audio gain
-      rs->audio_gain = getAudioGain();
+      int ag = 0;
+      if (getAudioGain(&ag) < 0) {
+	  return;
+      }
+      rs->audio_gain = ag;
       if (audio_gain_enc->count < audio_gain_last_count) {
               rs->audio_gain++;
               if (rs->audio_gain > 100) {
@@ -698,7 +709,12 @@ void i2c_expander_handler(radio_state *rs) {
             break;
         }
         case BTN_FSTEP: {
-            rs->zzac_index = getStepIndex();
+	    int zzac_index = 0;
+            if (getStepIndex(&zzac_index) < 0) {
+		break;
+	    }
+	    rs->zzac_index = zzac_index;
+
             // cycle through 1, 10, 100, 1k, 10k, 100k, 1M hz
             rs->zzac_index = (rs->zzac_index + 1) % step_incr_max;
             printf("ZZAC%02d;", rs->zzac_index);
@@ -988,11 +1004,15 @@ int main(void) {
             switchLPF(rs, f);
 
             // switch between LSB and USB at the 10MHz boundary
-            int mode = getMode();
-            if (last_f < 10000000 && f >= 10000000 && mode == LSB) {
+            mode m = INVALIDMODE;
+	    if (getMode(&m) < 0) {
+		// just assume a mode in case getMode() fails
+		m = LSB;
+	    }
+            if (last_f < 10000000 && f >= 10000000 && m == LSB) {
                 // set mode to USB
                 printf("ZZMD01;");
-            } else if (last_f >= 10000000 && f < 10000000 && mode == USB) {
+            } else if (last_f >= 10000000 && f < 10000000 && m == USB) {
                 // set mode to LSB
                 printf("ZZMD00;");
             }

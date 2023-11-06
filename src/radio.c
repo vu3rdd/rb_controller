@@ -79,7 +79,7 @@ int getTXDrive(int *val) {
     return 0;
 }
 
-int getStepIndex(void) {
+int getStepIndex(int *val) {
     printf("ZZAC;");
     char step_buffer[8];
 
@@ -97,7 +97,8 @@ int getStepIndex(void) {
         return -1;
     }
 
-    return step_index;
+    *val = step_index;
+    return 0;
 }
 
 void setStepSize(unsigned int index) {
@@ -117,7 +118,7 @@ void setStepSize(unsigned int index) {
     }
 }
 
-int getAudioGain(void) {
+int getAudioGain(int *val) {
     printf("ZZAG;");
     char audiogain_buf[9];
 
@@ -134,11 +135,11 @@ int getAudioGain(void) {
     if (errno != 0) {
         return -1;
     }
-
-    return ag;
+    *val = ag;
+    return 0;
 }
 
-int getMicGain(void) {
+int getMicGain(int *val) {
     printf("ZZMG;");
     char micgain_buf[9];
 
@@ -156,10 +157,11 @@ int getMicGain(void) {
         return -1;
     }
 
-    return mic_gain;
+    *val = mic_gain;
+    return 0;
 }
 
-mode getMode(void) {
+int getMode(mode *val) {
     printf("ZZMD;"); // try to read the current mode
     char mode[20];
 
@@ -183,7 +185,8 @@ mode getMode(void) {
         return INVALIDMODE;
     }
 
-    return m;
+    *val = m;
+    return 0;
 }
 
 int getNB(void) {
