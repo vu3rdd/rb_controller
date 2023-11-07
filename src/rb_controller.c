@@ -529,8 +529,9 @@ void keypad_Handler(radio_state *rs) {
 			rs->vfoA_or_B = 'A';
 		    }
 		}
-		// convert vfoA_or_B into int (0 or 1)
-		printf("FR%d;", (rs->vfoA_or_B - 'A'));
+		// convert vfoA_or_B into int (0 or 1) and send
+		// the FR command to the radio.
+		printf("FR%d;", (rs->vfoA_or_B == 'A' ? 0 : 1));
 		break;
 	    }
             printf("ZZVS2;");
