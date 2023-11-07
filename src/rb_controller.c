@@ -529,7 +529,8 @@ void keypad_Handler(radio_state *rs) {
 			rs->vfoA_or_B = 'A';
 		    }
 		}
-		printf("FR%d;", rs->vfoA_or_B);
+		// convert vfoA_or_B into int (0 or 1)
+		printf("FR%d;", (rs->vfoA_or_B - 'A'));
 		break;
 	    }
             printf("ZZVS2;");
