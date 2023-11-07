@@ -519,13 +519,17 @@ void keypad_Handler(radio_state *rs) {
             break;
         case BTN_VFO_SWAP: {
 	    if (long_key_pressed) {
-		// change the currently selected VFO
-		// from A to B or B to A.
-		if (rs->vfoA_or_B == 'A') {
-		    rs->vfoA_or_B = 'B';
-		} else if (rs->vfoA_or_B == 'B') {
-		    rs->vfoA_or_B = 'A';
+		if (rs->split_val == 1) {
+		    // if the radio is on split mode, then
+		    // change the currently selected VFO
+		    // from A to B or B to A.
+		    if (rs->vfoA_or_B == 'A') {
+			rs->vfoA_or_B = 'B';
+		    } else if (rs->vfoA_or_B == 'B') {
+			rs->vfoA_or_B = 'A';
+		    }
 		}
+		printf("FR%d;", rs->vfoA_or_B);
 		break;
 	    }
             printf("ZZVS2;");
