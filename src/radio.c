@@ -291,6 +291,23 @@ int getAGCMode(void) {
     return strtol(&agc[4], NULL, 10);
 }
 
+int getCTUNEState(void) {
+    printf("ZZCN;"); // try to read the current state
+    char ctune[7];
+
+    memset(ctune, '\0', 7);
+
+    for (int i = 0; i < 7; i++) {
+        ctune[i] = getchar();
+        if (ctune[i] == ';') {
+            ctune[i] = '\0';
+            break;
+        }
+    }
+
+    return strtol(&ctune[4], NULL, 10);
+}
+
 void tr_on(radio_state *rs) {
     // do not disturb any of the LPF state. Turn only the T/R line to 1.
     mcp23008_write_register(9, rs->lpf | (1U << 7));

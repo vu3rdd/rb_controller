@@ -74,6 +74,7 @@ int getAGCMode(void);
 int getMicGain(int *val);
 int getRXAttenuation(int *);
 int getTXDrive(int *);
+int getCTUNEState(void);
 void setStepSize(unsigned int index);
 
 #endif

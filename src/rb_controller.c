@@ -424,11 +424,12 @@ void keypad_Handler(radio_state *rs) {
     if (key_pressed) {
         switch (keyval) {
         case BTN_CTUNE:
-            printf("ZZCN%d;", rs->ctune);
+	    rs->ctune = getCTUNEState();
             if (rs->ctune == 0)
                 rs->ctune = 1;
             else
                 rs->ctune = 0;
+	    printf("ZZCN%d;", rs->ctune);
             break;
         case BTN_LSB_USB_AM:
             printf("ZZMD%s;", zzmd_val[rs->zzmd_index]);
