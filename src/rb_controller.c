@@ -773,16 +773,21 @@ void ptt_handler(radio_state *rs) {
     // if ptt is on, then put pihpsdr into tx.
     // however, to drive the relay, always use ptt_from_fpga
     if (old_ptt != ptt) {
-        old_ptt = ptt;
-        if (ptt == 0) { // PTT Pressed
-            printf("TX;");
-        } else { // PTT released
-            // wait a bit before releasing ptt and putting radio into
-            // rx mode
-            sleep_ms(PTT_HANGTIME_MS);
+	sleep_ms(20);
+	// read ptt again
+	int ptt_again = gpio_get(PTT_IN);
+	if (old_ptt != ptt_again) {
+	    old_ptt = ptt;
+	    if (ptt == 0) { // PTT Pressed
+		printf("TX;");
+	    } else { // PTT released
+		// wait a bit before releasing ptt and putting radio into
+		// rx mode
+		sleep_ms(PTT_HANGTIME_MS);
 
-            printf("RX;");
-        }
+		printf("RX;");
+	    }
+	}
     }
 
     // sleep_ms(10);
