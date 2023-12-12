@@ -566,12 +566,16 @@ void keypad_Handler(radio_state *rs) {
             printf("ZZVL%d;", rs->lock_val);
             break;
         case BTN_ANT_SEL:
+#ifndef BPF_VU2YYF
             if (rs->antsel == 0)
                 rs->antsel = 64;
             else
                 rs->antsel = 0;
             mcp23017_write_register(MCP23017_GPIOA, ((rs->antsel == 1) ? 4 : 8));
             mcp23008_write_register(9, rs->lpf | rs->antsel | rs->rxant);
+#else
+	    printf("ZZAO;");
+#endif
 	    break;
         case BTN_ON_OFF:
             if (rs->power) {
