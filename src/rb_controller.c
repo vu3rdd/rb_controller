@@ -289,34 +289,39 @@ bool repeating_timer_callback(struct repeating_timer *t) {
 }
 
 void vfo_enc_handler(radio_state *rs, encoder *vfo_enc) {
-  static unsigned int vfo_last_count;
+    static unsigned int vfo_last_count;
 
-  // note: this is a high pulse-per-rotation encoder. It emits 4 steps
-  // for each full-pulse period. Also, since the pulse rate is high,
-  // it may be better to divide this rate to something smaller to make
-  // the turning a lot smoother.
-  if (vfo_enc->count != vfo_last_count) {
-    // Take action here
-    if (vfo_enc->count < vfo_last_count) {
-	  if (rs->vfoA_or_B == 'A') {
-	      printf("ZZAF01;");
-	  } else {
-	      printf("ZZBF01;");
-	  }
-    }
-    if (vfo_enc->count > vfo_last_count) {
-	if (rs->vfoA_or_B == 'A') {
-	    printf("ZZAE01;");
-	} else {
-	    printf("ZZBE01;");
+    // note: this is a high pulse-per-rotation encoder. It emits 4 steps
+    // for each full-pulse period. Also, since the pulse rate is high,
+    // it may be better to divide this rate to something smaller to make
+    // the turning a lot smoother.
+    if (vfo_enc->count != vfo_last_count) {
+	// Take action here
+	if (vfo_enc->count < vfo_last_count) {
+	    if (rs->vfoA_or_B == 'A') {
+		printf("ZZAF01;");
+	    } else {
+		printf("ZZBF01;");
+	    }
 	}
-    }
-    // sleep_ms(10);
-    uint32_t f = getVFO(rs->vfoA_or_B);
-    switchLPF(rs, f);
-  }
+	if (vfo_enc->count > vfo_last_count) {
+	    if (rs->vfoA_or_B == 'A') {
+		printf("ZZAE01;");
+	    } else {
+		printf("ZZBE01;");
+	    }
+	}
+	// sleep_ms(10);
 
-  vfo_last_count = vfo_enc->count;
+	uint32_t f = 0;
+	if (getVFO(rs->vfoA_or_B, &f) < 0) {
+	    return;
+	}
+
+	switchLPF(rs, f);
+    }
+
+    vfo_last_count = vfo_enc->count;
 }
 
 void audio_gain_enc_handler(radio_state *rs, encoder *audio_gain_enc) {
@@ -444,34 +449,49 @@ void keypad_Handler(radio_state *rs) {
                 rs->zzmd1_index = 0;
             break;
         case BTN_AGC: {
-            rs->agc_mode = getAGCMode();
+	    int agc_mode = 0;
+	    if (getAGCMode(&agc_mode) < 0) {
+		break;
+	    }
+	    rs->agc_mode = agc_mode;
 	    rs->agc_mode = (rs->agc_mode + 1) % 5;
 
             printf("ZZGT%d;", rs->agc_mode);
             break;
         }
         case BTN_BAND_UP: {
-            // uint32_t f = getVFO(rs->vfoA_or_B);
 	    printf("ZZBU;");
-	    // sleep_ms(15);
 
 	    // update f
-	    uint32_t f = getVFO(rs->vfoA_or_B);
+	    uint32_t f = 0;
+	    if (getVFO(rs->vfoA_or_B, &f) < 0) {
+		break;
+	    }
+
             switchLPF(rs, f);
             break;
         }
         case BTN_BAND_DWN: {
-            // uint32_t f = getVFO(rs->vfoA_or_B);
 	    printf("ZZBD;");
-	    // sleep_ms(15);
 
-	    uint32_t f = getVFO(rs->vfoA_or_B);
+	    uint32_t f = 0;
+	    if (getVFO(rs->vfoA_or_B, &f) < 0) {
+		break;
+	    }
+
             switchLPF(rs, f);
             break;
         }
         case BTN_NB: {
-            int nb_val = getNB();
-            int nb2_val = getNB2();
+            int nb_val = 0;
+	    if (getNB(&nb_val) < 0) {
+		break;
+	    }
+
+            int nb2_val = 0;
+	    if (getNB2(&nb2_val) < 0) {
+		break;
+	    }
 
             if (nb_val == 0 && nb2_val == 0) {
                 // nb and nb2 is off, so turn on nb
@@ -487,7 +507,11 @@ void keypad_Handler(radio_state *rs) {
             }
 
             if (long_key_pressed) {
-                rs->snb_val = getSNB();
+		int snb_val = 0;
+		if (getSNB(&snb_val) < 0) {
+		    break;
+		}
+                rs->snb_val = snb_val;
                 rs->snb_val = (rs->snb_val + 1) % 2;
                 printf("ZZNN%d;", rs->snb_val);
                 break;
@@ -496,13 +520,20 @@ void keypad_Handler(radio_state *rs) {
             break;
         }
         case BTN_NR: {
-            int current_nr_val = getNR();
+            int current_nr_val = 0;
+	    if (getNR(&current_nr_val) < 0) {
+		break;
+	    }
 	    int new_nr_val = 0;
 
 	    new_nr_val = (current_nr_val + 1) % 5;
 
             if (long_key_pressed) {
-                rs->anf_val = getANF();
+		int anf_val = 0;
+		if (getANF(&anf_val) < 0) {
+		    break;
+		}
+                rs->anf_val = anf_val;
                 // toggle ANF state
                 rs->anf_val = (rs->anf_val + 1) % 2;
                 printf("ZZNT%d;", rs->anf_val);
@@ -537,7 +568,11 @@ void keypad_Handler(radio_state *rs) {
 	    }
             printf("ZZVS2;");
 
-            uint32_t f = getVFO(rs->vfoA_or_B);
+            uint32_t f = 0;
+	    if (getVFO(rs->vfoA_or_B, &f) < 0) {
+		break;
+	    }
+
             switchLPF(rs, f);
             break;
         }
@@ -973,8 +1008,10 @@ int main(void) {
     struct repeating_timer timer;
     add_repeating_timer_ms(-(timer_tick_period_ms), repeating_timer_callback, NULL, &timer);
 
-    uint32_t f = getVFO(rs->vfoA_or_B);
-    switchLPF(rs, f);
+    uint32_t f = 0;
+    if (getVFO(rs->vfoA_or_B, &f) == 0) {
+	switchLPF(rs, f);
+    }
 
     static unsigned int last_vfo_count;
     uint32_t last_f = f;
@@ -1016,7 +1053,10 @@ int main(void) {
             last_vfo_count = vfo_enc->count;
 #endif // VFO_ADAPTIVE
 
-            f = getVFO(rs->vfoA_or_B);
+            if (getVFO(rs->vfoA_or_B, &f) < 0) {
+		continue;
+	    }
+
             switchLPF(rs, f);
 
             // switch between LSB and USB at the 10MHz boundary

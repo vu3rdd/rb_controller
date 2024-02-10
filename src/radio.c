@@ -7,28 +7,40 @@
 #include "radio.h"
 #include "config.h"
 
+#define SERIAL_READ_TIMEOUT_US  (10*1000) // 10ms
+
 // get current vfo frequency (A or B)
-uint32_t getVFO(char AorB) {
+// return 0 in case of an error. Ideally we should return two parameters
+int getVFO(char AorB, uint32_t *freq) {
     if (AorB == 'A') {
         printf("ZZFA;");
     } else if (AorB == 'B') {
         printf("ZZFB;");
     } else {
-        return 1234567;
+        return -1;
     }
     char resp[20]; // eg: ZZFA00007137000;
 
     memset(resp, '\0', 20);
 
     for (int i = 0; i < 20; i++) {
-        resp[i] = getchar();
-        if (resp[i] == ';') {
-            resp[i] = '\0';
-            break;
-        }
+        resp[i] = getchar_timeout_us(10*1000); // 10ms timeout
+	if (resp[i] != PICO_ERROR_TIMEOUT) {
+	    if (resp[i] == ';') {
+		resp[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
     }
 
-    return (uint32_t)strtoll(&resp[4], NULL, 10);
+    if (strcmp(resp, "?") == 0) {
+	return -1;
+    }
+
+    *freq = (uint32_t)strtoll(&resp[4], NULL, 10);
+    return 0;
 }
 
 // pass a pointer to a variable to which the result
@@ -39,11 +51,19 @@ int getRXAttenuation(int *val) {
 
     memset(attn_buffer, '\0', 8);
     for (int i = 0; i < 8; i++) {
-        attn_buffer[i] = getchar();
-        if (attn_buffer[i] == ';') {
-            attn_buffer[i] = '\0';
-            break;
-        }
+        attn_buffer[i] = getchar_timeout_us(10*1000);
+	if (attn_buffer[i] != PICO_ERROR_TIMEOUT) {
+	    if (attn_buffer[i] == ';') {
+              attn_buffer[i] = '\0';
+              break;
+            }
+	} else {
+	    return -1;
+	}
+    }
+
+    if (strcmp(attn_buffer, "?") == 0) {
+	return -1;
     }
 
     int attn = strtol(&attn_buffer[2], NULL, 10);
@@ -63,11 +83,19 @@ int getTXDrive(int *val) {
 
     memset(drive_buffer, '\0', 7);
     for (int i = 0; i < 7; i++) {
-        drive_buffer[i] = getchar();
-        if (drive_buffer[i] == ';') {
-            drive_buffer[i] = '\0';
-            break;
-        }
+        drive_buffer[i] = getchar_timeout_us(10*1000);
+	if (drive_buffer[i] != PICO_ERROR_TIMEOUT) {
+	    if (drive_buffer[i] == ';') {
+		drive_buffer[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
+    }
+
+    if (strcmp(drive_buffer, "?") == 0) {
+	return -1;
     }
 
     int drive = strtol(&drive_buffer[2], NULL, 10);
@@ -85,11 +113,19 @@ int getStepIndex(int *val) {
 
     memset(step_buffer, '\0', 8);
     for (int i = 0; i < 8; i++) {
-        step_buffer[i] = getchar();
-        if (step_buffer[i] == ';') {
-            step_buffer[i] = '\0';
-            break;
-        }
+        step_buffer[i] = getchar_timeout_us(10*1000);
+	if (step_buffer[i] != PICO_ERROR_TIMEOUT) {
+	    if (step_buffer[i] == ';') {
+		step_buffer[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
+    }
+
+    if (strcmp(step_buffer, "?") == 0) {
+	return -1;
     }
 
     int step_index = strtol(&step_buffer[4], NULL, 10);
@@ -124,17 +160,26 @@ int getAudioGain(int *val) {
 
     memset(audiogain_buf, '\0', 9);
     for (int i = 0; i < 9; i++) {
-        audiogain_buf[i] = getchar();
-        if (audiogain_buf[i] == ';') {
-            audiogain_buf[i] = '\0';
-            break;
-        }
+        audiogain_buf[i] = getchar_timeout_us(10*1000);
+	if (audiogain_buf[i] != PICO_ERROR_TIMEOUT) {
+	    if (audiogain_buf[i] == ';') {
+		audiogain_buf[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
+    }
+
+    if (strcmp(audiogain_buf, "?") == 0) {
+	return -1;
     }
 
     int ag = strtol(&audiogain_buf[4], NULL, 10);
     if (errno != 0) {
         return -1;
     }
+
     *val = ag;
     return 0;
 }
@@ -145,11 +190,19 @@ int getMicGain(int *val) {
 
     memset(micgain_buf, '\0', 9);
     for (int i = 0; i < 9; i++) {
-        micgain_buf[i] = getchar();
-        if (micgain_buf[i] == ';') {
-            micgain_buf[i] = '\0';
-            break;
-        }
+        micgain_buf[i] = getchar_timeout_us(10*1000);
+	if (micgain_buf[i] != PICO_ERROR_TIMEOUT) {
+	    if (micgain_buf[i] == ';') {
+		micgain_buf[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
+    }
+
+    if (strcmp(micgain_buf, "?") == 0) {
+	return -1;
     }
 
     int mic_gain = strtol(&micgain_buf[4], NULL, 10);
@@ -168,11 +221,19 @@ int getMode(mode *val) {
     memset(mode, '\0', 20);
 
     for (int i = 0; i < 20; i++) {
-        mode[i] = getchar();
-        if (mode[i] == ';') {
-            mode[i] = '\0';
-            break;
-        }
+        mode[i] = getchar_timeout_us(10*1000);
+	if (mode[i] != PICO_ERROR_TIMEOUT) {
+	    if (mode[i] == ';') {
+		mode[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
+    }
+
+    if (strcmp(mode, "?") == 0) {
+	return INVALIDMODE;
     }
 
     int m = (int) strtol(&mode[4], NULL, 10);
@@ -189,106 +250,167 @@ int getMode(mode *val) {
     return 0;
 }
 
-int getNB(void) {
+int getNB(int *val) {
     printf("ZZNA;"); // try to read the current mode
     char nb[7];
 
     memset(nb, '\0', 7);
 
     for (int i = 0; i < 7; i++) {
-        nb[i] = getchar();
-        if (nb[i] == ';') {
-            nb[i] = '\0';
-            break;
-        }
+        nb[i] = getchar_timeout_us(10*1000);
+	if (nb[i] != PICO_ERROR_TIMEOUT) {
+	    if (nb[i] == ';') {
+		nb[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
     }
 
-    return (nb[4] == '0' ? 0 : 1);
+    if (strcmp(nb, "?") == 0) {
+	return -1;
+    }
+
+    *val = (nb[4] == '0' ? 0 : 1);
+    return 0;
 }
 
-int getNB2(void) {
+int getNB2(int *val) {
     printf("ZZNB;"); // try to read the current mode
     char nb[7];
 
     memset(nb, '\0', 7);
 
     for (int i = 0; i < 7; i++) {
-        nb[i] = getchar();
-        if (nb[i] == ';') {
-            nb[i] = '\0';
-            break;
-        }
+        nb[i] = getchar_timeout_us(10*1000);
+	if (nb[i] != PICO_ERROR_TIMEOUT) {
+	    if (nb[i] == ';') {
+		nb[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
     }
 
-    return (nb[4] == '0' ? 0 : 1);
+    if (strcmp(nb, "?") == 0) {
+	return -1;
+    }
+
+    *val = (nb[4] == '0' ? 0 : 1);
+    return 0;
 }
 
-int getNR(void) {
+int getNR(int *val) {
     printf("ZZNR;"); // try to read the current mode
     char nr[7];
 
     memset(nr, '\0', 7);
 
     for (int i = 0; i < 7; i++) {
-        nr[i] = getchar();
-        if (nr[i] == ';') {
-            nr[i] = '\0';
-            break;
-        }
+        nr[i] = getchar_timeout_us(10*1000);
+	if (nr[i] != PICO_ERROR_TIMEOUT) {
+	    if (nr[i] == ';') {
+		nr[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
     }
 
-    return atoi(&nr[4]);
+    if (strcmp(nr, "?") == 0) {
+	return -1;
+    }
+
+    *val = (int) strtol(&nr[4], NULL, 10);
+    if (errno != 0) {
+        return -1;
+    }
+
+    return 0;
 }
 
-int getSNB(void) {
+int getSNB(int *val) {
     printf("ZZNN;"); // try to read the current mode
     char snb[7];
 
     memset(snb, '\0', 7);
 
     for (int i = 0; i < 7; i++) {
-        snb[i] = getchar();
-        if (snb[i] == ';') {
-            snb[i] = '\0';
-            break;
-        }
+        snb[i] = getchar_timeout_us(10*1000);
+	if (snb[i] != PICO_ERROR_TIMEOUT) {
+	    if (snb[i] == ';') {
+		snb[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
     }
 
-    return (snb[4] == '0' ? 0 : 1);
+    if (strcmp(snb, "?") == 0) {
+	return -1;
+    }
+
+    *val = (snb[4] == '0' ? 0 : 1);
+    return 0;
 }
 
-int getANF(void) {
+int getANF(int *val) {
     printf("ZZNT;"); // try to read the current mode
     char anf[7];
 
     memset(anf, '\0', 7);
 
     for (int i = 0; i < 7; i++) {
-        anf[i] = getchar();
-        if (anf[i] == ';') {
-            anf[i] = '\0';
-            break;
-        }
+        anf[i] = getchar_timeout_us(10*1000);
+	if (anf[i] != PICO_ERROR_TIMEOUT) {
+	    if (anf[i] == ';') {
+		anf[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
     }
 
-    return (anf[4] == '0' ? 0 : 1);
+    if (strcmp(anf, "?") == 0) {
+	return -1;
+    }
+
+    *val = (anf[4] == '0' ? 0 : 1);
+    return 0;
 }
 
-int getAGCMode(void) {
+int getAGCMode(int *val) {
     printf("ZZGT;"); // try to read the current mode
     char agc[7];
 
     memset(agc, '\0', 7);
 
     for (int i = 0; i < 7; i++) {
-        agc[i] = getchar();
-        if (agc[i] == ';') {
-            agc[i] = '\0';
-            break;
-        }
+        agc[i] = getchar_timeout_us(10*1000);
+	if (agc[i] != PICO_ERROR_TIMEOUT) {
+	    if (agc[i] == ';') {
+		agc[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
     }
 
-    return strtol(&agc[4], NULL, 10);
+    if (strcmp(agc, "?") == 0) {
+	return -1;
+    }
+
+    *val = (int) strtol(&agc[4], NULL, 10);
+    if (errno != 0) {
+        return -1;
+    }
+    return 0;
 }
 
 int getCTUNEState(void) {
@@ -298,11 +420,19 @@ int getCTUNEState(void) {
     memset(ctune, '\0', 7);
 
     for (int i = 0; i < 7; i++) {
-        ctune[i] = getchar();
-        if (ctune[i] == ';') {
-            ctune[i] = '\0';
-            break;
-        }
+        ctune[i] = getchar_timeout_us(10*1000);
+	if (ctune[i] != PICO_ERROR_TIMEOUT) {
+	    if (ctune[i] == ';') {
+		ctune[i] = '\0';
+		break;
+	    }
+	} else {
+	    return -1;
+	}
+    }
+
+    if (strcmp(ctune, "?") == 0) {
+	return -1;
     }
 
     return strtol(&ctune[4], NULL, 10);
